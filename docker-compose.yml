@@ -1,0 +1,159 @@
+version: '3.9'
+
+services:
+
+  # ─── Redis ──────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: hotel_redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── RabbitMQ ────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: hotel_rabbitmq
+    ports:
+      - '5672:5672'      # Services connect here
+      - '15672:15672'    # Dashboard opens here
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── MongoDB for Auth Service ─────────────────────────────
+  mongo-auth:
+    image: mongo:6
+    container_name: hotel_mongo_auth
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_auth_data:/data/db
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── MongoDB for Property Service ────────────────────────
+  mongo-property:
+    image: mongo:6
+    container_name: hotel_mongo_property
+    ports:
+      - '27018:27017'
+    volumes:
+      - mongo_property_data:/data/db
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── MongoDB for Booking Service ─────────────────────────
+  mongo-booking:
+    image: mongo:6
+    container_name: hotel_mongo_booking
+    ports:
+      - '27019:27017'
+    volumes:
+      - mongo_booking_data:/data/db
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── MongoDB for Payment Service ─────────────────────────
+  mongo-payment:
+    image: mongo:6
+    container_name: hotel_mongo_payment
+    ports:
+      - '27020:27017'
+    volumes:
+      - mongo_payment_data:/data/db
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── MongoDB for Housekeeping Service ────────────────────
+  mongo-housekeeping:
+    image: mongo:6
+    container_name: hotel_mongo_housekeeping
+    ports:
+      - '27021:27017'
+    volumes:
+      - mongo_housekeeping_data:/data/db
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── MongoDB for Notification Service ────────────────────
+  mongo-notification:
+    image: mongo:6
+    container_name: hotel_mongo_notification
+    ports:
+      - '27022:27017'
+    volumes:
+      - mongo_notification_data:/data/db
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── MongoDB for Restaurant Service ──────────────────────
+  mongo-restaurant:
+    image: mongo:6
+    container_name: hotel_mongo_restaurant
+    ports:
+      - '27023:27017'
+    volumes:
+      - mongo_restaurant_data:/data/db
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── MongoDB for Staff Service ────────────────────────────
+  mongo-staff:
+    image: mongo:6
+    container_name: hotel_mongo_staff
+    ports:
+      - '27024:27017'
+    volumes:
+      - mongo_staff_data:/data/db
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+  # ─── MongoDB for Analytics Service ───────────────────────
+  mongo-analytics:
+    image: mongo:6
+    container_name: hotel_mongo_analytics
+    ports:
+      - '27025:27017'
+    volumes:
+      - mongo_analytics_data:/data/db
+    networks:
+      - hotel_network
+    restart: unless-stopped
+
+# ─── Volumes ──────────────────────────────────────────────
+volumes:
+  redis_data:
+  rabbitmq_data:
+  mongo_auth_data:
+  mongo_property_data:
+  mongo_booking_data:
+  mongo_payment_data:
+  mongo_housekeeping_data:
+  mongo_notification_data:
+  mongo_restaurant_data:
+  mongo_staff_data:
+  mongo_analytics_data:
+
+# ─── Network ──────────────────────────────────────────────
+networks:
+  hotel_network:
+    driver: bridge
