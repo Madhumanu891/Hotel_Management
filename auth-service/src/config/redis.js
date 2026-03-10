@@ -44,7 +44,7 @@ const connectRadis = () => {
     logger.warn("Redis connection closed");
   });
 
-  redisClient.on("reconnectiong", () => {
+  redisClient.on("reconnecting", () => {
     logger.info("Redis reconnecting...");
   });
 
