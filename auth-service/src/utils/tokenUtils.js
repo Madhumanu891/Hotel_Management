@@ -13,7 +13,7 @@ const generateTokens = (userId, role) => {
   // Refresh token: long-lived
   //we are include role because it might change while token is active
   const refreshToken = jwt.sign(
-    { userId, role },
+    { userId},
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d" },
   );

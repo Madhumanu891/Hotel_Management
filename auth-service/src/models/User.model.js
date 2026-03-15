@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const { use } = require("react");
 
 const guestProfileSchema = new mongoose.Schema(
   {
@@ -101,7 +100,7 @@ const staffProfileSchema = new mongoose.Schema(
 
 const userSchema = new mongoose.Schema(
   {
-    emai: {
+    email: {
       type: String,
       required: [true, "Email is required"],
       unique: true,
@@ -163,6 +162,15 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+    },
+
     guestProfile: {
       type: guestProfileSchema,
       default: () => ({}),
@@ -182,7 +190,7 @@ const userSchema = new mongoose.Schema(
 
 // Unique index on email
 
-userSchema.index({ email: 1 });
+// userSchema.index({ email: 1 });
 
 // fast staff lookup by property and role (e.g. find all receptionists for a hotel) used by HR and hotel manager
 userSchema.index({ propertyId: 1, role: 1 });
@@ -206,11 +214,9 @@ userSchema.virtual("isLocked").get(function () {
 // If we don't check, the already-hashed password gets hashed again.
 // "abc" → "$2b$12$..." → "$2b$12$..." (correct password becomes unverifiable)
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("passwordHash")) return next(); // only hash if passwordHash field is new or changed
-
-  this.passwordHash = await bcrypt.hash(this.passwordHash, 12); // hash with salt rounds = 12
-  next();
+userSchema.pre("save", async function () {
+  if (!this.isModified("passwordHash")) return;
+  this.passwordHash = await bcrypt.hash(this.passwordHash, 12);
 });
 
 // Instance method to compare password during login
@@ -220,7 +226,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 };
 
 // hanleFailedLoginAttempt instance method to increment login attempts and set lockUntil if necessary
-userSchema.methods.handleFailedLoginAttempt = async function () {
+userSchema.methods.handleFailedLogin = async function () {
   this.loginAttempts += 1;
 
   if (this.loginAttempts >= 5) {
@@ -232,14 +238,12 @@ userSchema.methods.handleFailedLoginAttempt = async function () {
   await this.save({ validateBeforeSave: false });
 };
 
-
 // resetLoginAttempts instance method to reset attempts and lock status after successful login
 userSchema.methods.resetLoginAttempts = async function () {
   this.loginAttempts = 0;
   this.lockUntil = undefined; // undefined removes the field from the document
-    await this.save({ validateBeforeSave: false });
+  await this.save({ validateBeforeSave: false });
 };
-
 
 const User = mongoose.model("User", userSchema);
 
