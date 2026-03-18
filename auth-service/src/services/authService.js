@@ -10,6 +10,7 @@ const {
 } = require("../../../shared/errors");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const asyncHandler = require("../../../shared/utils/asyncHandler");
 
 // Register a new user
 // Create a new user in the database and publish an event to RabbitMQ
@@ -98,7 +99,7 @@ const login = async ({ email, password }) => {
   await user.resetLoginAttempts();
 
   // Generate new access and refresh tokens
-const { accessToken, refreshToken } = generateTokens(user._id, user.role);
+  const { accessToken, refreshToken } = generateTokens(user._id, user.role);
 
   // Hash the new refresh token and store in DB (replace old one)
   user.refreshToken = hashToken(refreshToken);
@@ -267,6 +268,8 @@ const getMe = async (userId) => {
   if (!user) throw new NotFoundError("User not found");
   return user;
 };
+
+
 
 module.exports = {
   register,

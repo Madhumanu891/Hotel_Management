@@ -145,6 +145,48 @@ const getMe = asyncHandler(async (req, res) => {
   });
 });
 
+
+// Creating staff
+// hotel_manager can only create staff for their own property
+// super_admin can create staff for any property
+const createStaff = asyncHandler(async (req,res) => {
+  const {
+    email,password,role,
+    employeeId, department, designation, salary,
+  } =  req.body
+
+
+  const propertyId = req.user.role === "super_admin" ? req.body.propertyId : req.user.propertyId
+
+  const existing = await require('../models/User.model').findOne({email})
+  if(existing){
+    return res.status(409).json({
+      success : false,
+      message: 'An account with this email already exists',
+    })
+  }
+
+  const staff = await require('../models/User.model').create({
+    email,
+    passwordHash : password,
+    role,
+    propertyId,
+    staffProfile : {employeeId, department, designation, salary},
+  })
+
+  res.status(201),json({
+    success: true,
+    message: `${role} account created successfully.`,
+    data: {
+      id: staff._id,
+      email: staff.email,
+      role: staff.role,
+      employeeId: staff.staffProfile.employeeId,
+    }
+  })
+})
+
+
 module.exports = {
   register,
   login,
@@ -153,4 +195,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getMe,
+  createStaff,
 };
