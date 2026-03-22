@@ -145,47 +145,72 @@ const getMe = asyncHandler(async (req, res) => {
   });
 });
 
-
 // Creating staff
 // hotel_manager can only create staff for their own property
 // super_admin can create staff for any property
-const createStaff = asyncHandler(async (req,res) => {
+const createStaff = asyncHandler(async (req, res) => {
   const {
-    email,password,role,
-    employeeId, department, designation, salary,
-  } =  req.body
+    email,
+    password,
+    role,
+    propertyId: bodyPropertyId,
+    employeeId,
+    department,
+    designation,
+    salary,
+  } = req.body;
 
+  // hotel_manager can only create staff for their own property
+  // super_admin can specify any propertyId in the body
+  const propertyId =
+    req.user.role === "super_admin" ? req.body.propertyId : req.user.propertyId;
 
-  const propertyId = req.user.role === "super_admin" ? req.body.propertyId : req.user.propertyId
-
-  const existing = await require('../models/User.model').findOne({email})
-  if(existing){
-    return res.status(409).json({
-      success : false,
-      message: 'An account with this email already exists',
-    })
+  if (!propertyId) {
+    return res.status(400).json({
+      success: false,
+      message: "Property ID is required to create a staff account",
+    });
   }
 
-  const staff = await require('../models/User.model').create({
+  const User = require("../models/User.model");
+
+  const existing = await User.findOne({ email });
+
+  if (existing) {
+    return res.status(409).json({
+      success: false,
+      code: "CONFLICT",
+      message: "An account with this email already exists",
+    });
+  }
+
+  const staff = await User.create({
     email,
-    passwordHash : password,
+    passwordHash: password,
     role,
     propertyId,
-    staffProfile : {employeeId, department, designation, salary},
-  })
+    staffProfile: {
+      employeeId,
+      department,
+      designation,
+      salary: salary ? Number(salary) : undefined,
+    },
+  });
 
-  res.status(201),json({
-    success: true,
-    message: `${role} account created successfully.`,
-    data: {
-      id: staff._id,
-      email: staff.email,
-      role: staff.role,
-      employeeId: staff.staffProfile.employeeId,
-    }
-  })
-})
-
+  (res.status(201).
+    json({
+      success: true,
+      message: `${role} account created successfully.`,
+      data: {
+        id: staff._id,
+        email: staff.email,
+        role: staff.role,
+        propertyId: staff.propertyId,
+        employeeId: staff.staffProfile.employeeId,
+        department: staff.staffProfile.department,
+      },
+    }));
+});
 
 module.exports = {
   register,

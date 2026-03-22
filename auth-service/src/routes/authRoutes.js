@@ -28,8 +28,8 @@ router.patch(
 );
 
 // Protected routes (protect middleware added) valid token required
-router.post("/logout", authController.logout, protect, authController.logout);
-router.get("/me", authController.getMe, protect, authController.getMe);
+router.post("/logout", protect, authController.logout);
+router.get("/me", protect, authController.getMe);
 
 // Staff management - admin only
 router.post(
