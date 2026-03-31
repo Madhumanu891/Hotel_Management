@@ -19,7 +19,7 @@ const protect = async (req, res, next) => {
     // step-1 : Extract token from Authorization header
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer")) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       throw new UnauthorizedError(
         "No token provided. Please log in to access this resource.",
       );

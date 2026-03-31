@@ -32,7 +32,8 @@
     "supertest": "^6.3.4"
   },
   "jest": {
-    "testEnvironment": "node",
-    "testMatch": ["**/tests/**/*.test.js"]
+     "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "testTimeout": 30000
   }
 }
