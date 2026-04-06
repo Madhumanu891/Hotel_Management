@@ -6,7 +6,7 @@ const { AppError } = require("../../../shared/errors");
 // No files ever saved to disk
 const storage = multer.memoryStorage();
 
-const fileFilter = (req, file, cd) => {
+const fileFilter = (req, file, cb) => {
   // Only allow image files
   if (!file.mimetype.startsWith("image/")) {
     return cb(
@@ -14,7 +14,7 @@ const fileFilter = (req, file, cd) => {
       false,
     );
   }
-  cd(null, true);
+  cb(null, true);
 };
 
 const upload = multer({
