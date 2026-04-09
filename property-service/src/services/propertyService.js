@@ -33,7 +33,7 @@ const getProperties = async (query) => {
   }
 
   if (minRating) {
-    filter.startRating = { $gte: Number(minRating) }; // Minimum star rating
+    filter.starRating = { $gte: Number(minRating) }; // Minimum star rating
   }
 
   if (amenities) {
@@ -71,11 +71,7 @@ const getProperties = async (query) => {
 
 // GET ONE PROPERTY BY SLUG
 const getPropertyBySlug = async (slug) => {
-  const property = await Property.findOne({ slug, isActive: true }).populate(
-    "managedBy",
-    "email role",
-  ); // Include manager info
-  lean();
+  const property = await Property.findOne({ slug, isActive: true }).lean(); // Include manager info
 
   if (!property) throw new NotFoundError(`Property not found : ${slug}`);
 
@@ -183,7 +179,7 @@ const deletePropertyImage = async (propertyId, publicId) => {
 
   // If we deleted the primary image, make first remaining image primary
   if (
-    property.images.lenght > 0 &&
+    property.images.length > 0 &&
     !property.images.some((img) => img.isPrimary)
   ) {
     property.images[0].isPrimary = true;
