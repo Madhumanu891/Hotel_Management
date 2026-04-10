@@ -15,12 +15,14 @@ cloudinary.config({
 // Why buffer instead of file path?
 // We use multer's memoryStorage — file never touches disk
 // Goes straight from RAM to Cloudinary → faster, cleaner
-const uploadBuffer = ({ buffer, folder, options = {} }) => 
+const uploadBuffer = ({ buffer, folder, options = {} }) =>
   new Promise((resolve, reject) => {
+    const safeBuffer = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);  // Ensure it's a Buffer
+
     const uploadOptions = {
       folder,
       transformation: [
-        { width: 1200, hieght: 800, crop: "fill", quality: "auto" },
+        { width: 1200, height: 800, crop: "fill", quality: "auto" },
       ],
       ...options,
     };
@@ -32,18 +34,16 @@ const uploadBuffer = ({ buffer, folder, options = {} }) =>
         resolve(result);
       },
     );
-    stream.end(buffer);
+    stream.end(safeBuffer);  // Send the buffer to Cloudinary 
   });
-
 
 // deleteImage
 // Removes an image from Cloudinary using its publicId
 // Called when manager deletes a hotel photo
-const deleteImage=async(publicId)=>{
-    const result=await cloudinary.uploader.destroy(publicId)
-    logger.info('Image deleted from Cloudinary', {publicId,result})
-    return result
-}
+const deleteImage = async (publicId) => {
+  const result = await cloudinary.uploader.destroy(publicId);
+  logger.info("Image deleted from Cloudinary", { publicId, result });
+  return result;
+};
 
-
-module.exports={uploadBuffer,deleteImage}
+module.exports = { uploadBuffer, deleteImage };

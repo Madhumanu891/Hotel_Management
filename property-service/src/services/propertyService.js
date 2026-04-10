@@ -8,6 +8,47 @@ const {
   ConflictError,
   AppError,
 } = require("../../../shared/errors");
+const { getRedisClient } = require("../config/redis");
+
+// Cache TTl values
+const CACHE_TTL = {
+  AVAILABILITY: 5 * 60, // 5 minutes for availability search results
+  PROPERTIES: 10 * 60, // 10 minutes for property details
+  PROPERTY: 15 * 60, // 15 minutes for individual property details
+};
+
+// Cache helper functions
+const getCache = async (key) => {
+  try {
+    const redis = getRedisClient();
+    const cached = await redis.get(key);
+    return cached ? JSON.parse(cached) : null;
+  } catch (error) {
+    // If Redis fails, continue without cache — never crash for cache miss
+    return null;
+  }
+};
+
+const setCache = async (key, data, ttl) => {
+  try {
+    const redis = getRedisClient();
+    await redis.setex(key, ttl, JSON.stringify(data));
+  } catch (err) {
+    // If Redis fails, continue — caching is non-critical
+  }
+};
+
+const clearCache = async (pattern) => {
+  try {
+    const redis = getRedisClient();
+    const keys = await redis.keys(pattern);
+    if (keys.length > 0) {
+      await redis.del(...keys);
+    }
+  } catch (err) {
+    // Non-critical
+  }
+};
 
 // GET ALL PROPERTIES
 // Supports filtering by: city, starRating, amenities, maxPrice
@@ -23,6 +64,13 @@ const getProperties = async (query) => {
     sortBy = "createdAt",
     sortOrder = "desc",
   } = query;
+
+  // Build cache key from query params
+  const cacheKey = `properties:${JSON.stringify(query)}`;
+
+  // Check cache first
+  const cached = await getCache(cacheKey);
+  if (cached) return cached;
 
   // Build filter object based on query parameters
   const filter = { isActive: true }; // Only return active properties
@@ -56,17 +104,22 @@ const getProperties = async (query) => {
     .select("-images.publicId") // Exclude publicId from response for security
     .lean(); // Return plain JS objects instead of Mongoose documents for better performance
 
-  return {
+  const result = {
     properties,
     pagination: {
       total,
       page: Number(page),
       limit: Number(limit),
-      totalPages: Math.ceil(total / limit), // Calculate total pages based on total count and limit
-      hasNext: page * limit < total, // True if there are more pages after current
-      hasPrev: page > 1, // True if there are pages before current
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
     },
   };
+
+  // Store in cache
+  await setCache(cacheKey, result, CACHE_TTL.PROPERTIES);
+
+  return result;
 };
 
 // GET ONE PROPERTY BY SLUG
@@ -93,6 +146,9 @@ const createProperty = async (data, userId) => {
     managedBy: userId,
   });
 
+  await clearCache("properties:*");
+  await clearCache("availability:*");
+
   return property;
 };
 
@@ -114,6 +170,10 @@ const updateProperty = async (id, data, user) => {
   // Update fields
   Object.assign(property, data);
   await property.save();
+
+  await clearCache("properties:*");
+  await clearCache("availability:*");
+  await clearCache(`property:${id}`);
 
   return property;
 };
@@ -232,6 +292,7 @@ const getRooms = async (propertyId, query = {}) => {
 
 const createRoom = async (propertyId, data) => {
   const room = await Room.create({ ...data, propertyId });
+  await clearCache("availability:*");
   return room;
 };
 
@@ -297,6 +358,11 @@ const searchAvailable = async (query) => {
   if (checkOutDate <= checkInDate) {
     throw new AppError("Check-out must be after check-in", 400, "INVALID_DATE");
   }
+
+  // Check cache
+  const cacheKey = `availability:${JSON.stringify(query)}`;
+  const cached = await getCache(cacheKey);
+  if (cached) return { ...cached, fromCache: true };
 
   const totalGuests = Number(adults) + Number(children);
 
@@ -373,7 +439,7 @@ const searchAvailable = async (query) => {
   const total = results.length;
   const paginated = results.slice((page - 1) * limit, page * limit);
 
-  return {
+  const response = {
     properties: paginated,
     pagination: {
       total,
@@ -381,14 +447,13 @@ const searchAvailable = async (query) => {
       limit: Number(limit),
       totalPages: Math.ceil(total / limit),
     },
-    searchParams: {
-      city,
-      checkIn,
-      checkOut,
-      adults,
-      children,
-    },
+    searchParams: { city, checkIn, checkOut, adults, children },
   };
+
+  // Cache the result
+  await setCache(cacheKey, response, CACHE_TTL.AVAILABILITY);
+
+  return response;
 };
 
 module.exports = {
