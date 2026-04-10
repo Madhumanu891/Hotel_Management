@@ -1,6 +1,6 @@
-const propertyService = require('../services/propertyService');
-const asyncHandler    = require('../../../shared/utils/asyncHandler');
-const upload          = require('../middlewares/upload');
+const propertyService = require("../services/propertyService");
+const asyncHandler = require("../../../shared/utils/asyncHandler");
+const upload = require("../middlewares/upload");
 
 // ── Properties ────────────────────────────────────────────────────────────────
 
@@ -18,19 +18,21 @@ const createProperty = asyncHandler(async (req, res) => {
   const property = await propertyService.createProperty(req.body, req.user._id);
   res.status(201).json({
     success: true,
-    message: 'Property created successfully',
-    data:    property,
+    message: "Property created successfully",
+    data: property,
   });
 });
 
 const updateProperty = asyncHandler(async (req, res) => {
   const property = await propertyService.updateProperty(
-    req.params.id, req.body, req.user
+    req.params.id,
+    req.body,
+    req.user,
   );
   res.status(200).json({
     success: true,
-    message: 'Property updated successfully',
-    data:    property,
+    message: "Property updated successfully",
+    data: property,
   });
 });
 
@@ -38,7 +40,7 @@ const deactivateProperty = asyncHandler(async (req, res) => {
   await propertyService.deactivateProperty(req.params.id, req.user);
   res.status(200).json({
     success: true,
-    message: 'Property deactivated successfully',
+    message: "Property deactivated successfully",
   });
 });
 
@@ -48,7 +50,7 @@ const uploadImage = asyncHandler(async (req, res) => {
   if (!req.file) {
     return res.status(400).json({
       success: false,
-      message: 'No image file provided',
+      message: "No image file provided",
     });
   }
 
@@ -56,13 +58,13 @@ const uploadImage = asyncHandler(async (req, res) => {
     req.params.id,
     req.file,
     req.body.caption,
-    req.body.isPrimary === 'true',
+    req.body.isPrimary === "true",
   );
 
   res.status(200).json({
     success: true,
-    message: 'Image uploaded successfully',
-    data:    property.images,
+    message: "Image uploaded successfully",
+    data: property.images,
   });
 });
 
@@ -74,8 +76,8 @@ const deleteImage = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: 'Image deleted successfully',
-    data:    property.images,
+    message: "Image deleted successfully",
+    data: property.images,
   });
 });
 
@@ -87,22 +89,27 @@ const getRoomTypes = asyncHandler(async (req, res) => {
 });
 
 const createRoomType = asyncHandler(async (req, res) => {
-  const roomType = await propertyService.createRoomType(req.params.id, req.body);
+  const roomType = await propertyService.createRoomType(
+    req.params.id,
+    req.body,
+  );
   res.status(201).json({
     success: true,
-    message: 'Room type created successfully',
-    data:    roomType,
+    message: "Room type created successfully",
+    data: roomType,
   });
 });
 
 const updateRoomType = asyncHandler(async (req, res) => {
   const roomType = await propertyService.updateRoomType(
-    req.params.id, req.params.roomTypeId, req.body
+    req.params.id,
+    req.params.roomTypeId,
+    req.body,
   );
   res.status(200).json({
     success: true,
-    message: 'Room type updated successfully',
-    data:    roomType,
+    message: "Room type updated successfully",
+    data: roomType,
   });
 });
 
@@ -110,7 +117,7 @@ const deleteRoomType = asyncHandler(async (req, res) => {
   await propertyService.deleteRoomType(req.params.id, req.params.roomTypeId);
   res.status(200).json({
     success: true,
-    message: 'Room type deactivated successfully',
+    message: "Room type deactivated successfully",
   });
 });
 
@@ -125,20 +132,33 @@ const createRoom = asyncHandler(async (req, res) => {
   const room = await propertyService.createRoom(req.params.id, req.body);
   res.status(201).json({
     success: true,
-    message: 'Room created successfully',
-    data:    room,
+    message: "Room created successfully",
+    data: room,
   });
 });
 
 const updateRoomStatus = asyncHandler(async (req, res) => {
   const { status, note } = req.body;
   const room = await propertyService.updateRoomStatus(
-    req.params.id, req.params.roomId, status, note
+    req.params.id,
+    req.params.roomId,
+    status,
+    note,
   );
   res.status(200).json({
     success: true,
-    message: 'Room status updated',
-    data:    room,
+    message: "Room status updated",
+    data: room,
+  });
+});
+
+const searchAvailable = asyncHandler(async (req, res) => {
+  const result = await propertyService.searchAvailable(req.query);
+
+  res.status(200).json({
+    success: true,
+    message: `Found ${result.properties.length} available properties`,
+    ...result,
   });
 });
 
@@ -157,4 +177,5 @@ module.exports = {
   getRooms,
   createRoom,
   updateRoomStatus,
+  searchAvailable,
 };

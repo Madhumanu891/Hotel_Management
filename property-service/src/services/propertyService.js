@@ -250,6 +250,147 @@ const updateRoomStatus = async (propertyId, roomId, status, note) => {
   return room;
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SEARCH AVAILABLE PROPERTIES
+// Returns properties that have at least one available room type
+// for the requested dates and guest count
+//
+// At this stage we check room inventory count vs existing bookings
+// When Booking Service is built (Day 22), it will call this same logic
+// ─────────────────────────────────────────────────────────────────────────────
+const searchAvailable = async (query) => {
+  const {
+    city,
+    checkIn,
+    checkOut,
+    adults = 1,
+    children = 0,
+    minRating,
+    amenities,
+    maxPrice,
+    page = 1,
+    limit = 10,
+  } = query;
+
+  // Validate dates
+  if (!checkIn || !checkOut) {
+    throw new AppError(
+      "checkIn and checkOut dates are required",
+      400,
+      "MISSING_DATES",
+    );
+  }
+
+  const checkInDate = new Date(checkIn);
+  const checkOutDate = new Date(checkOut);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (checkInDate < today) {
+    throw new AppError(
+      "Check-in date cannot be in the past",
+      400,
+      "INVALID_DATE",
+    );
+  }
+
+  if (checkOutDate <= checkInDate) {
+    throw new AppError("Check-out must be after check-in", 400, "INVALID_DATE");
+  }
+
+  const totalGuests = Number(adults) + Number(children);
+
+  // Step 1: Find matching active properties
+  const propertyFilter = { isActive: true };
+  if (city) propertyFilter["location.city"] = new RegExp(city, "i");
+  if (minRating) propertyFilter.starRating = { $gte: Number(minRating) };
+  if (amenities) {
+    propertyFilter.amenities = {
+      $all: amenities.split(",").map((a) => a.trim()),
+    };
+  }
+
+  const properties = await Property.find(propertyFilter).lean();
+
+  // Step 2: For each property, find available room types
+  const results = [];
+
+  for (const property of properties) {
+    // Get all active room types for this property
+    const roomTypeFilter = {
+      propertyId: property._id,
+      isActive: true,
+      maxOccupancy: { $gte: totalGuests }, // Must fit all guests
+    };
+
+    if (maxPrice) roomTypeFilter.basePrice = { $lte: Number(maxPrice) };
+
+    const roomTypes = await RoomType.find(roomTypeFilter).lean();
+
+    const availableRoomTypes = [];
+
+    for (const roomType of roomTypes) {
+      // Count total rooms of this type
+      const totalRooms = await Room.countDocuments({
+        propertyId: property._id,
+        roomTypeId: roomType._id,
+        status: "available",
+      });
+
+      if (totalRooms === 0) continue; // No rooms of this type
+
+      // NOTE: When Booking Service exists (Day 22), we will query it here
+      // to get count of overlapping confirmed bookings.
+      // For now we assume all available rooms are bookable.
+      // This placeholder will be replaced in Day 22.
+      const blockedRooms = 0; // TODO: query booking-service
+
+      const availableCount = totalRooms - blockedRooms;
+
+      if (availableCount > 0) {
+        // Calculate pricing for the stay
+        const roomTypeDoc = await RoomType.findById(roomType._id);
+        const pricing = roomTypeDoc.calculateTotalPrice(checkIn, checkOut);
+
+        availableRoomTypes.push({
+          ...roomType,
+          availableCount,
+          pricing,
+        });
+      }
+    }
+
+    // Only include property if it has at least one available room type
+    if (availableRoomTypes.length > 0) {
+      results.push({
+        ...property,
+        availableRoomTypes,
+      });
+    }
+  }
+
+  // Pagination on results
+  const total = results.length;
+  const paginated = results.slice((page - 1) * limit, page * limit);
+
+  return {
+    properties: paginated,
+    pagination: {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / limit),
+    },
+    searchParams: {
+      city,
+      checkIn,
+      checkOut,
+      adults,
+      children,
+    },
+  };
+};
+
 module.exports = {
   getProperties,
   getPropertyBySlug,
@@ -266,4 +407,5 @@ module.exports = {
   getRooms,
   createRoom,
   updateRoomStatus,
+  searchAvailable,
 };

@@ -2,15 +2,31 @@ const router     = require('express').Router();
 const ctrl       = require('../controllers/propertyController');
 const { protect, restrictTo } = require('../middlewares/auth');
 const upload     = require('../middlewares/upload');
+const validate   = require('../../../shared/middlewares/validate');
+const {
+  validateCreateProperty,
+  validateCreateRoomType,
+  validateCreateRoom,
+  validateAvailabilitySearch,
+  validateUpdateRoomStatus,
+} = require('../validators/propertyValidators');
 
-// ── Public routes — no token needed ──────────────────────────────────────────
+// ── Public routes ─────────────────────────────────────────────────────────────
+router.get('/search/available',
+  validateAvailabilitySearch,
+  validate,
+  ctrl.searchAvailable
+);
+
 router.get('/',      ctrl.getProperties);
 router.get('/:slug', ctrl.getPropertyBySlug);
 
-// ── Protected — managers only ─────────────────────────────────────────────────
+// ── Manager only ──────────────────────────────────────────────────────────────
 router.post('/',
   protect,
   restrictTo('super_admin', 'hotel_manager'),
+  validateCreateProperty,
+  validate,
   ctrl.createProperty
 );
 
@@ -46,6 +62,8 @@ router.get('/:id/room-types', ctrl.getRoomTypes);
 router.post('/:id/room-types',
   protect,
   restrictTo('super_admin', 'hotel_manager'),
+  validateCreateRoomType,
+  validate,
   ctrl.createRoomType
 );
 
@@ -71,12 +89,16 @@ router.get('/:id/rooms',
 router.post('/:id/rooms',
   protect,
   restrictTo('super_admin', 'hotel_manager'),
+  validateCreateRoom,
+  validate,
   ctrl.createRoom
 );
 
 router.put('/:id/rooms/:roomId',
   protect,
   restrictTo('super_admin', 'hotel_manager', 'housekeeping', 'receptionist'),
+  validateUpdateRoomStatus,
+  validate,
   ctrl.updateRoomStatus
 );
 
