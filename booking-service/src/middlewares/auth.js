@@ -20,7 +20,9 @@ const protect = async (req, res, next) => {
     try {
       decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     } catch (err) {
-      throw new UnauthorizedError(err.name === 'TokenExpiredError' ? 'Session expired.' : 'Invalid token.');
+      throw new UnauthorizedError(
+        err.name === 'TokenExpiredError' ? 'Session expired.' : 'Invalid token.'
+      );
     }
     req.user = { _id: decoded.userId, role: decoded.role, propertyId: decoded.propertyId };
     next();
@@ -33,13 +35,4 @@ const restrictTo = (...roles) => (req, res, next) => {
   next();
 };
 
-const checkSameProperty = (req, res, next) => {
-  if (req.user.role === 'super_admin' || req.user._id === 'internal-service') return next();
-  const reqProp = req.params.propertyId || req.body.propertyId;
-  if (!reqProp) return next();
-  if (req.user.propertyId?.toString() !== reqProp.toString())
-    return next(new ForbiddenError('You can only access your own property.'));
-  next();
-};
-
-module.exports = { protect, restrictTo, checkSameProperty };
+module.exports = { protect, restrictTo };
