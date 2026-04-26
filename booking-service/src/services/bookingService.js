@@ -176,7 +176,6 @@ const createBooking = async ({
   if (!availability.available) {
     throw new AppError(
       `No rooms available for the selected dates. ${availability.availableCount} rooms remaining.`,
-      409,
       "NO_AVAILABILITY",
     );
   }
