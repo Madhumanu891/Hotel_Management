@@ -1,28 +1,43 @@
 require('dotenv').config();
-const express = require('express');
-const logger = require('./utils/logger');
+const app       = require('./app');
+const connectDB = require('./config/db');
+const { connectRedis } = require('./config/redis');
+const logger    = require('./utils/logger');
 
-const app = express();
-const PORT = process.env.PORT || 3004;
-const SERVICE = process.env.SERVICE_NAME || "payment-service";
+const PORT    = process.env.PORT    || 3004;
+const SERVICE = process.env.SERVICE_NAME || 'payment-service';
 
-app.use(express.json());
+const startServer = async () => {
+  try {
+    logger.info(`Starting ${SERVICE}...`);
+    await connectDB();
+    connectRedis();
 
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    service: SERVICE,
-    port: PORT,
-    timestamp: new Date().toISOString()
-  });
-});
+    const server = app.listen(PORT, () => {
+      logger.info(`${SERVICE} started`, {
+        port:        PORT,
+        environment: process.env.NODE_ENV,
+        health:      `http://localhost:${PORT}/health`,
+      });
+    });
 
-app.listen(PORT, () => {
-  logger.info(`Server started successfully`, {
-    port: PORT,
-    environment: process.env.NODE_ENV,
-    health: `http://localhost:${PORT}/health`
-  });
-});
+    const shutdown = async (signal) => {
+      logger.info(`${signal} received. Shutting down...`);
+      server.close(async () => {
+        const mongoose = require('mongoose');
+        await mongoose.connection.close();
+        process.exit(0);
+      });
+      setTimeout(() => process.exit(1), 10000);
+    };
 
-module.exports = app;
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT',  () => shutdown('SIGINT'));
+
+  } catch (err) {
+    logger.error(`Failed to start ${SERVICE}`, { error: err.message });
+    process.exit(1);
+  }
+};
+
+startServer();
