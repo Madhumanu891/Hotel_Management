@@ -1,0 +1,10 @@
+{
+  "name": "@hotel/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities for all hotel services",
+  "dependencies": {
+    "winston": "^3.11.0",
+    "express-validator": "^7.0.1",
+    "amqplib": "^0.10.3"
+  }
+}

@@ -24,7 +24,7 @@
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
     "uuid": "^9.0.1",
-    "winston": "^3.11.0"
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
@@ -34,8 +34,12 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/tests/**/*.test.js"],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
     "testTimeout": 30000,
-    "setupFilesAfterEnv": ["./tests/setup.js"]
+    "setupFilesAfterEnv": [
+      "./tests/setup.js"
+    ]
   }
 }

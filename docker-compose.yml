@@ -1,158 +1,226 @@
+version: '3.8'
 
 services:
 
-  # ─── Redis ──────────────────────────────────────────────
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
   redis:
     image: redis:7-alpine
     container_name: hotel_redis
     ports:
-      - '6379:6379'
+      - "6379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
-    networks:
-      - hotel_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
-  # ─── RabbitMQ ────────────────────────────────────────────
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3-management-alpine
     container_name: hotel_rabbitmq
     ports:
-      - '5672:5672'      # Services connect here
-      - '15672:15672'    # Dashboard opens here
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin123
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - hotel_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     restart: unless-stopped
 
-  # ─── MongoDB for Auth Service ─────────────────────────────
-  mongo-auth:
-    image: mongo:6
-    container_name: hotel_mongo_auth
+  # ── Microservices ───────────────────────────────────────────────────────────
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: hotel_api_gateway
     ports:
-      - '27017:27017'
-    volumes:
-      - mongo_auth_data:/data/db
-    networks:
-      - hotel_network
+      - "3000:3000"
+    env_file: ./api-gateway/.env
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - PROPERTY_SERVICE_URL=http://property-service:3002
+      - BOOKING_SERVICE_URL=http://booking-service:3003
+      - PAYMENT_SERVICE_URL=http://payment-service:3004
+      - HOUSEKEEPING_SERVICE_URL=http://housekeeping-service:3005
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3006
+      - RESTAURANT_SERVICE_URL=http://restaurant-service:3007
+      - STAFF_SERVICE_URL=http://staff-service:3008
+      - ANALYTICS_SERVICE_URL=http://analytics-service:3009
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
-  # ─── MongoDB for Property Service ────────────────────────
-  mongo-property:
-    image: mongo:6
-    container_name: hotel_mongo_property
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: hotel_auth_service
     ports:
-      - '27018:27017'
-    volumes:
-      - mongo_property_data:/data/db
-    networks:
-      - hotel_network
+      - "3001:3001"
+    env_file: ./auth-service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
 
-  # ─── MongoDB for Booking Service ─────────────────────────
-  mongo-booking:
-    image: mongo:6
-    container_name: hotel_mongo_booking
+  property-service:
+    build:
+      context: .
+      dockerfile: property-service/Dockerfile
+    container_name: hotel_property_service
     ports:
-      - '27019:27017'
-    volumes:
-      - mongo_booking_data:/data/db
-    networks:
-      - hotel_network
+      - "3002:3002"
+    env_file: ./property-service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
-  # ─── MongoDB for Payment Service ─────────────────────────
-  mongo-payment:
-    image: mongo:6
-    container_name: hotel_mongo_payment
+  booking-service:
+    build:
+      context: .
+      dockerfile: booking-service/Dockerfile
+    container_name: hotel_booking_service
     ports:
-      - '27020:27017'
-    volumes:
-      - mongo_payment_data:/data/db
-    networks:
-      - hotel_network
+      - "3003:3003"
+    env_file: ./booking-service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+      - PROPERTY_SERVICE_URL=http://property-service:3002
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
 
-  # ─── MongoDB for Housekeeping Service ────────────────────
-  mongo-housekeeping:
-    image: mongo:6
-    container_name: hotel_mongo_housekeeping
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    container_name: hotel_payment_service
     ports:
-      - '27021:27017'
-    volumes:
-      - mongo_housekeeping_data:/data/db
-    networks:
-      - hotel_network
+      - "3004:3004"
+    env_file: ./payment-service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+      - BOOKING_SERVICE_URL=http://booking-service:3003
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
 
-  # ─── MongoDB for Notification Service ────────────────────
-  mongo-notification:
-    image: mongo:6
-    container_name: hotel_mongo_notification
+  housekeeping-service:
+    build:
+      context: .
+      dockerfile: housekeeping-service/Dockerfile
+    container_name: hotel_housekeeping_service
     ports:
-      - '27022:27017'
-    volumes:
-      - mongo_notification_data:/data/db
-    networks:
-      - hotel_network
+      - "3005:3005"
+    env_file: ./housekeeping-service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
 
-  # ─── MongoDB for Restaurant Service ──────────────────────
-  mongo-restaurant:
-    image: mongo:6
-    container_name: hotel_mongo_restaurant
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: hotel_notification_service
     ports:
-      - '27023:27017'
-    volumes:
-      - mongo_restaurant_data:/data/db
-    networks:
-      - hotel_network
+      - "3006:3006"
+    env_file: ./notification-service/.env
+    environment:
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
 
-  # ─── MongoDB for Staff Service ────────────────────────────
-  mongo-staff:
-    image: mongo:6
-    container_name: hotel_mongo_staff
+  restaurant-service:
+    build:
+      context: .
+      dockerfile: restaurant-service/Dockerfile
+    container_name: hotel_restaurant_service
     ports:
-      - '27024:27017'
-    volumes:
-      - mongo_staff_data:/data/db
-    networks:
-      - hotel_network
+      - "3007:3007"
+    env_file: ./restaurant-service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
-  # ─── MongoDB for Analytics Service ───────────────────────
-  mongo-analytics:
-    image: mongo:6
-    container_name: hotel_mongo_analytics
+  staff-service:
+    build:
+      context: .
+      dockerfile: staff-service/Dockerfile
+    container_name: hotel_staff_service
     ports:
-      - '27025:27017'
-    volumes:
-      - mongo_analytics_data:/data/db
-    networks:
-      - hotel_network
+      - "3008:3008"
+    env_file: ./staff-service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
-# ─── Volumes ──────────────────────────────────────────────
+  analytics-service:
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
+    container_name: hotel_analytics_service
+    ports:
+      - "3009:3009"
+    env_file: ./analytics-service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - BOOKING_SERVICE_URL=http://booking-service:3003
+      - PROPERTY_SERVICE_URL=http://property-service:3002
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   redis_data:
   rabbitmq_data:
-  mongo_auth_data:
-  mongo_property_data:
-  mongo_booking_data:
-  mongo_payment_data:
-  mongo_housekeeping_data:
-  mongo_notification_data:
-  mongo_restaurant_data:
-  mongo_staff_data:
-  mongo_analytics_data:
 
-# ─── Network ──────────────────────────────────────────────
 networks:
-  hotel_network:
-    driver: bridge
+  default:
+    name: hotel_network
