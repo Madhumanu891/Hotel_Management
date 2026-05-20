@@ -30,9 +30,14 @@ const start = async () => {
 
     await startConsumers();
 
-    logger.info("Notification service started successfully", {
-      service: process.env.SERVICE_NAME || "notification-service",
+    app.listen(PORT, () => {
+      logger.info("Notification service started successfully", {
+        service: process.env.SERVICE_NAME || "notification-service",
+        port: PORT,
+        health: `http://localhost:${PORT}/health`,
+      });
     });
+
   } catch (err) {
     logger.error("Failed to start notification service", {
       error: err.message,
