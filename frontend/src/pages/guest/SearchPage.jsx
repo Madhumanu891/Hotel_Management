@@ -15,7 +15,7 @@ const amenityIcons = {
 
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
-    {[1,2,3,4,5].map(i => (
+    {[1, 2, 3, 4, 5].map(i => (
       <Star
         key={i}
         className={`h-3.5 w-3.5 ${i <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}`}
@@ -81,8 +81,9 @@ const HotelCard = ({ property, onSelect }) => {
         )}
 
         {/* Price */}
+        {/* Price — update existing */}
         {firstRoom && (
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <span className="text-2xl font-bold text-gray-900">
                 ₹{firstRoom.pricing?.totalAmount?.toLocaleString()}
@@ -92,7 +93,7 @@ const HotelCard = ({ property, onSelect }) => {
                 ₹{firstRoom.basePrice?.toLocaleString()} + 18% GST
               </div>
             </div>
-            <button className="btn-primary text-sm px-4 py-2">
+            <button className="btn-primary text-sm px-4 py-2 w-full sm:w-auto">
               Select
             </button>
           </div>
@@ -109,10 +110,10 @@ export default function SearchPage() {
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
-      city:     '',
-      checkIn:  '',
+      city: '',
+      checkIn: '',
       checkOut: '',
-      adults:   1,
+      adults: 1,
       children: 0,
     },
   });
@@ -121,10 +122,10 @@ export default function SearchPage() {
 
   const onSubmit = (formData) => {
     setSearchParams({
-      city:     formData.city,
-      checkIn:  formData.checkIn,
+      city: formData.city,
+      checkIn: formData.checkIn,
       checkOut: formData.checkOut,
-      adults:   formData.adults,
+      adults: formData.adults,
       children: formData.children,
     });
   };
@@ -196,7 +197,7 @@ export default function SearchPage() {
               <div className="relative">
                 <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <select className="input pl-9" {...register('adults')}>
-                  {[1,2,3,4,5,6].map(n => (
+                  {[1, 2, 3, 4, 5, 6].map(n => (
                     <option key={n} value={n}>{n} Adult{n > 1 ? 's' : ''}</option>
                   ))}
                 </select>

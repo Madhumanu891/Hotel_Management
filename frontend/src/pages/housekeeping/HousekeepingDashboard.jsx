@@ -10,15 +10,15 @@ import {
 } from '../../hooks/useHousekeeping';
 import { useAuthStore } from '../../stores/authStore';
 import Spinner from '../../components/ui/Spinner';
-import Button  from '../../components/ui/Button';
+import Button from '../../components/ui/Button';
 
 // ── Priority Badge ──────────────────────────────────────────────────────────
 const PriorityBadge = ({ priority }) => {
   const config = {
     urgent: 'bg-red-100 text-red-700 border border-red-200',
-    high:   'bg-orange-100 text-orange-700 border border-orange-200',
+    high: 'bg-orange-100 text-orange-700 border border-orange-200',
     normal: 'bg-blue-100 text-blue-700 border border-blue-200',
-    low:    'bg-gray-100 text-gray-600 border border-gray-200',
+    low: 'bg-gray-100 text-gray-600 border border-gray-200',
   };
   return (
     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${config[priority] || config.normal}`}>
@@ -31,10 +31,10 @@ const PriorityBadge = ({ priority }) => {
 const TypeBadge = ({ type }) => {
   const config = {
     checkout_clean: 'badge-error',
-    stayover:       'badge-info',
-    deep_clean:     'badge-purple',
-    inspection:     'badge-success',
-    maintenance:    'badge-warning',
+    stayover: 'badge-info',
+    deep_clean: 'badge-purple',
+    inspection: 'badge-success',
+    maintenance: 'badge-warning',
   };
   return (
     <span className={config[type] || 'badge-info'}>
@@ -46,8 +46,8 @@ const TypeBadge = ({ type }) => {
 // ── Checklist Component ─────────────────────────────────────────────────────
 const TaskChecklist = ({ task, onUpdate, isUpdating }) => {
   const completed = task.checklist?.filter(c => c.done).length || 0;
-  const total     = task.checklist?.length || 0;
-  const progress  = total > 0 ? (completed / total) * 100 : 0;
+  const total = task.checklist?.length || 0;
+  const progress = total > 0 ? (completed / total) * 100 : 0;
 
   return (
     <div className="space-y-3">
@@ -65,9 +65,8 @@ const TaskChecklist = ({ task, onUpdate, isUpdating }) => {
         {task.checklist?.map((item, idx) => (
           <label
             key={idx}
-            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-              item.done ? 'bg-green-50' : 'bg-gray-50 hover:bg-gray-100'
-            }`}
+            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${item.done ? 'bg-green-50' : 'bg-gray-50 hover:bg-gray-100'
+              }`}
           >
             <input
               type="checkbox"
@@ -89,21 +88,20 @@ const TaskChecklist = ({ task, onUpdate, isUpdating }) => {
 
 // ── Task Card ───────────────────────────────────────────────────────────────
 const TaskCard = ({ task, onStart, onComplete, onVerify, onChecklistUpdate,
-                    isStarting, isCompleting, isVerifying, isUpdating }) => {
+  isStarting, isCompleting, isVerifying, isUpdating }) => {
   const [expanded, setExpanded] = useState(false);
-  const [notes,    setNotes]    = useState('');
+  const [notes, setNotes] = useState('');
 
-  const canStart    = task.status === 'pending';
+  const canStart = task.status === 'pending';
   const canComplete = task.status === 'in_progress';
-  const canVerify   = task.status === 'completed';
+  const canVerify = task.status === 'completed';
 
   const allDone = task.checklist?.every(c => c.done);
 
   return (
-    <div className={`card overflow-hidden transition-shadow hover:shadow-md ${
-      task.priority === 'urgent' ? 'border-l-4 border-l-red-500' :
-      task.priority === 'high'   ? 'border-l-4 border-l-orange-400' : ''
-    }`}>
+    <div className={`card overflow-hidden transition-shadow hover:shadow-md ${task.priority === 'urgent' ? 'border-l-4 border-l-red-500' :
+      task.priority === 'high' ? 'border-l-4 border-l-orange-400' : ''
+      }`}>
       {/* Header */}
       <div className="p-5">
         <div className="flex items-start justify-between">
@@ -137,10 +135,10 @@ const TaskCard = ({ task, onStart, onComplete, onVerify, onChecklistUpdate,
 
           {/* Status */}
           <div className="ml-4 text-right">
-            {task.status === 'pending'     && <span className="badge-warning">Pending</span>}
+            {task.status === 'pending' && <span className="badge-warning">Pending</span>}
             {task.status === 'in_progress' && <span className="badge-info">In Progress</span>}
-            {task.status === 'completed'   && <span className="badge-success">Completed</span>}
-            {task.status === 'verified'    && <span className="badge-purple">Verified</span>}
+            {task.status === 'completed' && <span className="badge-success">Completed</span>}
+            {task.status === 'verified' && <span className="badge-purple">Verified</span>}
           </div>
         </div>
 
@@ -148,13 +146,13 @@ const TaskCard = ({ task, onStart, onComplete, onVerify, onChecklistUpdate,
           <p className="mt-2 text-sm text-gray-500 italic">{task.notes}</p>
         )}
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 mt-4">
+        {/* Actions — make buttons bigger for mobile */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4">
           {canStart && (
             <Button
               onClick={() => onStart(task._id)}
               loading={isStarting}
-              className="flex-1 py-2"
+              className="flex-1 py-3 sm:py-2 text-base sm:text-sm"
             >
               <Play className="h-4 w-4" />
               Start Cleaning
@@ -166,11 +164,11 @@ const TaskCard = ({ task, onStart, onComplete, onVerify, onChecklistUpdate,
               onClick={() => onComplete(task._id, { notes })}
               loading={isCompleting}
               disabled={!allDone}
-              className="flex-1 py-2"
+              className="flex-1 py-3 sm:py-2 text-base sm:text-sm"
               variant={allDone ? 'primary' : 'secondary'}
             >
               <CheckCircle className="h-4 w-4" />
-              {allDone ? 'Mark Complete' : 'Complete All Items First'}
+              {allDone ? 'Mark Complete' : 'Finish Checklist First'}
             </Button>
           )}
 
@@ -178,16 +176,16 @@ const TaskCard = ({ task, onStart, onComplete, onVerify, onChecklistUpdate,
             <Button
               onClick={() => onVerify(task._id)}
               loading={isVerifying}
-              className="flex-1 py-2"
+              className="flex-1 py-3 sm:py-2"
             >
               <Shield className="h-4 w-4" />
-              Verify & Close
+              Verify
             </Button>
           )}
 
           <button
             onClick={() => setExpanded(!expanded)}
-            className="p-2 rounded-lg border hover:bg-gray-50 transition-colors"
+            className="p-3 sm:p-2 rounded-lg border hover:bg-gray-50 transition-colors sm:flex-shrink-0"
           >
             {expanded
               ? <ChevronUp className="h-5 w-5 text-gray-500" />
@@ -227,29 +225,29 @@ const TaskCard = ({ task, onStart, onComplete, onVerify, onChecklistUpdate,
 
 // ── Main Dashboard ──────────────────────────────────────────────────────────
 export default function HousekeepingDashboard() {
-  const { user }   = useAuthStore();
+  const { user } = useAuthStore();
   const propertyId = user?.propertyId || '69d6817ab880abc410462b20';
-  const isManager  = ['hotel_manager', 'super_admin'].includes(user?.role);
+  const isManager = ['hotel_manager', 'super_admin'].includes(user?.role);
 
   const [filter, setFilter] = useState('all');
 
-  const { data: myTasksData,       isLoading: myLoading }   = useMyTasks(
+  const { data: myTasksData, isLoading: myLoading } = useMyTasks(
     filter !== 'all' ? { status: filter } : {}
   );
-  const { data: allTasksData,      isLoading: allLoading }  = usePropertyTasks(
+  const { data: allTasksData, isLoading: allLoading } = usePropertyTasks(
     propertyId,
     filter !== 'all' ? { status: filter } : {}
   );
   const { data: stats } = useTaskStats(propertyId);
 
-  const startMutation     = useStartTask();
-  const completeMutation  = useCompleteTask();
-  const verifyMutation    = useVerifyTask();
+  const startMutation = useStartTask();
+  const completeMutation = useCompleteTask();
+  const verifyMutation = useVerifyTask();
   const checklistMutation = useUpdateChecklist();
 
   const tasks = isManager
-    ? (allTasksData?.tasks  || [])
-    : (myTasksData?.tasks   || []);
+    ? (allTasksData?.tasks || [])
+    : (myTasksData?.tasks || []);
 
   const isLoading = isManager ? allLoading : myLoading;
 
@@ -262,11 +260,11 @@ export default function HousekeepingDashboard() {
   };
 
   const filterTabs = [
-    { key: 'all',         label: 'All Tasks' },
-    { key: 'pending',     label: 'Pending' },
+    { key: 'all', label: 'All Tasks' },
+    { key: 'pending', label: 'Pending' },
     { key: 'in_progress', label: 'In Progress' },
-    { key: 'completed',   label: 'Completed' },
-    { key: 'verified',    label: 'Verified' },
+    { key: 'completed', label: 'Completed' },
+    { key: 'verified', label: 'Verified' },
   ];
 
   return (
@@ -285,10 +283,10 @@ export default function HousekeepingDashboard() {
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Pending',     value: stats.today?.pending,     color: 'bg-yellow-50 text-yellow-700', icon: Clock },
-            { label: 'In Progress', value: stats.today?.inProgress,  color: 'bg-blue-50 text-blue-700',    icon: Play },
-            { label: 'Completed',   value: stats.today?.completed,   color: 'bg-green-50 text-green-700',  icon: CheckCircle },
-            { label: 'Verified',    value: stats.today?.verified,    color: 'bg-purple-50 text-purple-700',icon: Shield },
+            { label: 'Pending', value: stats.today?.pending, color: 'bg-yellow-50 text-yellow-700', icon: Clock },
+            { label: 'In Progress', value: stats.today?.inProgress, color: 'bg-blue-50 text-blue-700', icon: Play },
+            { label: 'Completed', value: stats.today?.completed, color: 'bg-green-50 text-green-700', icon: CheckCircle },
+            { label: 'Verified', value: stats.today?.verified, color: 'bg-purple-50 text-purple-700', icon: Shield },
           ].map(({ label, value, color, icon: Icon }) => (
             <div key={label} className="card p-5">
               <div className={`h-9 w-9 rounded-xl flex items-center justify-center mb-3 ${color}`}>
@@ -307,11 +305,10 @@ export default function HousekeepingDashboard() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-              filter === tab.key
-                ? 'bg-primary-700 text-white'
-                : 'bg-white text-gray-600 border hover:bg-gray-50'
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === tab.key
+              ? 'bg-primary-700 text-white'
+              : 'bg-white text-gray-600 border hover:bg-gray-50'
+              }`}
           >
             {tab.label}
           </button>

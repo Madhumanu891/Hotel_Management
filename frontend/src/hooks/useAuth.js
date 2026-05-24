@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../lib/axios';
 import { useAuthStore } from '../stores/authStore';
 import { queryClient } from '../lib/queryClient';
@@ -14,19 +15,22 @@ export const useLogin = () => {
 
     onSuccess: (data) => {
       setAuth(data.data.user, data.data.accessToken);
-      // Route based on role
-      const role = data.data.user.role;
+      toast.success(`Welcome back, ${data.data.user.name || 'User'}!`);
       const routes = {
-        guest:             '/dashboard/guest',
-        receptionist:      '/dashboard/receptionist',
-        hotel_manager:     '/dashboard/manager',
-        housekeeping:      '/dashboard/housekeeping',
-        restaurant_staff:  '/dashboard/restaurant',
-        hr_manager:        '/dashboard/hr',
-        accountant:        '/dashboard/accountant',
-        super_admin:       '/dashboard/admin',
+        guest:            '/dashboard/guest',
+        receptionist:     '/dashboard/receptionist',
+        hotel_manager:    '/dashboard/manager',
+        housekeeping:     '/dashboard/housekeeping',
+        restaurant_staff: '/dashboard/restaurant',
+        hr_manager:       '/dashboard/hr',
+        accountant:       '/dashboard/accountant',
+        super_admin:      '/dashboard/admin',
       };
-      navigate(routes[role] || '/dashboard/guest');
+      navigate(routes[data.data.user.role] || '/dashboard/guest');
+    },
+
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Login failed');
     },
   });
 };
@@ -41,7 +45,12 @@ export const useRegister = () => {
 
     onSuccess: (data) => {
       setAuth(data.data.user, data.data.accessToken);
+      toast.success('Account created successfully! Welcome to NexoraHotels.');
       navigate('/dashboard/guest');
+    },
+
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Registration failed');
     },
   });
 };
@@ -55,6 +64,7 @@ export const useLogout = () => {
     onSettled: () => {
       logout();
       queryClient.clear();
+      toast.success('Logged out successfully');
       navigate('/login');
     },
   });
@@ -74,6 +84,8 @@ export const useForgotPassword = () =>
   useMutation({
     mutationFn: (email) =>
       api.post('/api/auth/forgot-password', { email }).then(r => r.data),
+    onSuccess: () => toast.success('Reset link sent! Check your inbox.'),
+    onError:   () => toast.error('Something went wrong. Please try again.'),
   });
 
 export const useResetPassword = () => {
@@ -81,6 +93,12 @@ export const useResetPassword = () => {
   return useMutation({
     mutationFn: ({ token, password }) =>
       api.patch(`/api/auth/reset-password/${token}`, { password }).then(r => r.data),
-    onSuccess: () => navigate('/login'),
+    onSuccess: () => {
+      toast.success('Password updated successfully!');
+      navigate('/login');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Reset failed. Link may have expired.');
+    },
   });
 };

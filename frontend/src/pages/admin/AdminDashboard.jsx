@@ -34,7 +34,7 @@ const StatusDot = ({ status }) => {
 const SystemHealth = () => {
   const { data: services, isLoading, refetch, isFetching } = useSystemHealth();
 
-  const upCount   = services?.filter(s => s.status === 'up').length   || 0;
+  const upCount = services?.filter(s => s.status === 'up').length || 0;
   const downCount = services?.filter(s => s.status === 'down').length || 0;
 
   return (
@@ -68,12 +68,11 @@ const SystemHealth = () => {
           {services?.map(svc => (
             <div key={svc.name} className="flex items-center justify-between px-6 py-3.5 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
-                <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                  svc.status === 'up' ? 'bg-green-50' : 'bg-red-50'
-                }`}>
+                <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${svc.status === 'up' ? 'bg-green-50' : 'bg-red-50'
+                  }`}>
                   {svc.status === 'up'
                     ? <CheckCircle className="h-4 w-4 text-green-600" />
-                    : <XCircle    className="h-4 w-4 text-red-600" />
+                    : <XCircle className="h-4 w-4 text-red-600" />
                   }
                 </div>
                 <div>
@@ -119,7 +118,7 @@ const PropertyRow = ({ property }) => (
     </td>
     <td className="px-6 py-4">
       <div className="flex items-center gap-1">
-        {[1,2,3,4,5].map(i => (
+        {[1, 2, 3, 4, 5].map(i => (
           <Star
             key={i}
             className={`h-3.5 w-3.5 ${i <= property.starRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}`}
@@ -149,15 +148,15 @@ const PropertyRow = ({ property }) => (
 );
 
 // ── Main Admin Dashboard ────────────────────────────────────────────────────
-export default function AdminDashboard() {
-  const [activeTab,   setActiveTab]   = useState('overview');
+export default function AdminDashboard({ tab }) {
+  const [activeTab, setActiveTab] = useState(tab || 'overview');
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: propertiesData, isLoading: propertiesLoading } = useAllProperties({
     limit: 50,
   });
 
-  const properties  = propertiesData?.properties || [];
+  const properties = propertiesData?.properties || [];
   const propertyIds = properties.map(p => p._id);
 
   const { data: globalStats } = useGlobalStats(propertyIds);
@@ -168,9 +167,9 @@ export default function AdminDashboard() {
   );
 
   const tabs = [
-    { key: 'overview',   label: 'Overview',   icon: Globe },
+    { key: 'overview', label: 'Overview', icon: Globe },
     { key: 'properties', label: 'Properties', icon: Building2 },
-    { key: 'health',     label: 'System',     icon: Activity },
+    { key: 'health', label: 'System', icon: Activity },
   ];
 
   return (
@@ -187,11 +186,10 @@ export default function AdminDashboard() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+              }`}
           >
             <tab.icon className="h-4 w-4" />
             {tab.label}
@@ -208,25 +206,25 @@ export default function AdminDashboard() {
               {
                 label: 'Total Properties',
                 value: properties.length,
-                icon:  Building2,
+                icon: Building2,
                 color: 'bg-primary-50 text-primary-700',
               },
               {
                 label: 'Active Properties',
                 value: properties.filter(p => p.isActive).length,
-                icon:  CheckCircle,
+                icon: CheckCircle,
                 color: 'bg-green-50 text-green-700',
               },
               {
                 label: 'Monthly Bookings',
                 value: globalStats?.totalBookings || 0,
-                icon:  TrendingUp,
+                icon: TrendingUp,
                 color: 'bg-blue-50 text-blue-700',
               },
               {
                 label: 'Monthly Revenue',
                 value: `₹${((globalStats?.totalRevenue || 0) / 1000).toFixed(0)}K`,
-                icon:  DollarSign,
+                icon: DollarSign,
                 color: 'bg-orange-50 text-orange-700',
               },
             ].map(({ label, value, icon: Icon, color }) => (

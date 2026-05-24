@@ -4,52 +4,53 @@ import {
   Hotel, LayoutDashboard, Calendar, Users, Settings,
   ClipboardList, ChefHat, BarChart3, LogOut, Menu, X,
 } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useLogout } from '../hooks/useAuth';
 
 const navByRole = {
   hotel_manager: [
-    { to: '/dashboard/manager',    label: 'Dashboard',   icon: LayoutDashboard },
+    { to: '/dashboard/manager', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/dashboard/manager/bookings', label: 'Bookings', icon: Calendar },
-    { to: '/dashboard/manager/staff',    label: 'Staff',    icon: Users },
-    { to: '/dashboard/manager/analytics',label: 'Analytics',icon: BarChart3 },
+    { to: '/dashboard/manager/staff', label: 'Staff', icon: Users },
+    { to: '/dashboard/manager/analytics', label: 'Analytics', icon: BarChart3 },
     { to: '/dashboard/manager/settings', label: 'Settings', icon: Settings },
   ],
   receptionist: [
-    { to: '/dashboard/receptionist',           label: 'Dashboard',  icon: LayoutDashboard },
-    { to: '/dashboard/receptionist/checkin',   label: 'Check-in',   icon: Calendar },
-    { to: '/dashboard/receptionist/checkout',  label: 'Check-out',  icon: Calendar },
-    { to: '/dashboard/receptionist/rooms',     label: 'Room Map',   icon: Hotel },
+    { to: '/dashboard/receptionist', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard/receptionist/checkin', label: 'Check-in', icon: Calendar },
+    { to: '/dashboard/receptionist/checkout', label: 'Check-out', icon: Calendar },
+    { to: '/dashboard/receptionist/rooms', label: 'Room Map', icon: Hotel },
   ],
   housekeeping: [
-    { to: '/dashboard/housekeeping',         label: 'My Tasks', icon: ClipboardList },
-    { to: '/dashboard/housekeeping/all',     label: 'All Rooms', icon: Hotel },
+    { to: '/dashboard/housekeeping', label: 'My Tasks', icon: ClipboardList },
+    { to: '/dashboard/housekeeping/all', label: 'All Rooms', icon: Hotel },
   ],
   restaurant_staff: [
-    { to: '/dashboard/restaurant',         label: 'Live Orders', icon: ChefHat },
-    { to: '/dashboard/restaurant/menu',    label: 'Menu',        icon: ClipboardList },
+    { to: '/dashboard/restaurant', label: 'Live Orders', icon: ChefHat },
+    { to: '/dashboard/restaurant/menu', label: 'Menu', icon: ClipboardList },
   ],
   super_admin: [
-    { to: '/dashboard/admin',              label: 'Dashboard',   icon: LayoutDashboard },
-    { to: '/dashboard/admin/properties',   label: 'Properties',  icon: Hotel },
-    { to: '/dashboard/admin/users',        label: 'Users',       icon: Users },
-    { to: '/dashboard/admin/analytics',    label: 'Analytics',   icon: BarChart3 },
+    { to: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard/admin/properties', label: 'Properties', icon: Hotel },
+    { to: '/dashboard/admin/analytics', label: 'System', icon: Activity },
+    { to: '/dashboard/admin/users', label: 'Overview', icon: Users },
   ],
   hr_manager: [
-    { to: '/dashboard/hr',                 label: 'Dashboard',   icon: LayoutDashboard },
-    { to: '/dashboard/hr/staff',           label: 'Staff',       icon: Users },
-    { to: '/dashboard/hr/shifts',          label: 'Shifts',      icon: Calendar },
-    { to: '/dashboard/hr/leave',           label: 'Leave',       icon: ClipboardList },
+    { to: '/dashboard/hr', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard/hr/staff', label: 'Staff', icon: Users },
+    { to: '/dashboard/hr/shifts', label: 'Shifts', icon: Calendar },
+    { to: '/dashboard/hr/leave', label: 'Leave', icon: ClipboardList },
   ],
   accountant: [
-    { to: '/dashboard/accountant',         label: 'Dashboard',   icon: LayoutDashboard },
-    { to: '/dashboard/accountant/payments',label: 'Payments',    icon: BarChart3 },
+    { to: '/dashboard/accountant', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard/accountant/payments', label: 'Revenue', icon: BarChart3 },
   ],
 };
 
 export default function StaffLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user }    = useAuthStore();
+  const { user } = useAuthStore();
   const logoutMutation = useLogout();
 
   const navItems = navByRole[user?.role] || [];
@@ -82,6 +83,14 @@ export default function StaffLayout() {
           </NavLink>
         ))}
       </nav>
+
+      <NavLink
+        to={`/dashboard/${user?.role === 'super_admin' ? 'admin' : user?.role?.replace('_', '-')}/profile`}
+        className={({ isActive }) => isActive ? 'sidebar-active' : 'sidebar-item'}
+      >
+        <User className="h-5 w-5" />
+        My Profile
+      </NavLink>
 
       {/* User + logout */}
       <div className="px-3 py-4 border-t border-white/10">

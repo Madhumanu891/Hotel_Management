@@ -1,10 +1,13 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Hotel, Search, Calendar, User, LogOut, Star } from 'lucide-react';
+import { Outlet, NavLink } from 'react-router-dom';
+import {
+  Hotel, Search, Calendar, User, LogOut, Star, Home,
+} from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useLogout } from '../hooks/useAuth';
+import MobileNav from '../components/ui/MobileNav';
 
 export default function GuestLayout() {
-  const { user } = useAuthStore();
+  const { user }       = useAuthStore();
   const logoutMutation = useLogout();
 
   const tierColors = {
@@ -13,7 +16,6 @@ export default function GuestLayout() {
     gold:     'text-yellow-600 bg-yellow-50',
     platinum: 'text-purple-600 bg-purple-50',
   };
-
   const tier = user?.guestProfile?.loyaltyTier || 'bronze';
 
   return (
@@ -27,15 +29,18 @@ export default function GuestLayout() {
               <div className="h-9 w-9 rounded-xl bg-primary-700 flex items-center justify-center">
                 <Hotel className="h-5 w-5 text-white" />
               </div>
-              <span className="font-bold text-lg text-gray-900">NexoraHotels</span>
+              <span className="font-bold text-lg text-gray-900 hidden sm:block">
+                NexoraHotels
+              </span>
             </div>
 
-            {/* Nav links */}
+            {/* Desktop Nav links */}
             <div className="hidden md:flex items-center gap-1">
               {[
-                { to: '/dashboard/guest',         label: 'Home',     icon: Hotel },
-                { to: '/dashboard/guest/search',  label: 'Search',   icon: Search },
-                { to: '/dashboard/guest/bookings',label: 'Bookings', icon: Calendar },
+                { to: '/dashboard/guest',          label: 'Home',     icon: Home     },
+                { to: '/dashboard/guest/search',   label: 'Search',   icon: Search   },
+                { to: '/dashboard/guest/bookings', label: 'Bookings', icon: Calendar },
+                { to: '/dashboard/guest/profile',  label: 'Profile',  icon: User     },
               ].map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
@@ -61,7 +66,7 @@ export default function GuestLayout() {
                 <Star className="h-3 w-3" />
                 {tier}
               </span>
-              <span className="hidden sm:block text-sm font-medium text-gray-700">
+              <span className="hidden sm:block text-sm font-medium text-gray-700 max-w-24 truncate">
                 {user?.name || user?.email}
               </span>
               <button
@@ -76,10 +81,13 @@ export default function GuestLayout() {
         </div>
       </nav>
 
-      {/* Page content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Page content — extra bottom padding for mobile nav */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8">
         <Outlet />
       </main>
+
+      {/* Mobile bottom nav */}
+      <MobileNav role={user?.role} />
     </div>
   );
 }
