@@ -1,6 +1,8 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import api from '../lib/axios';
 import { queryClient } from '../lib/queryClient';
+import { useNotifications } from './useNotifications';
+
 
 export const useMyBookings = (params) =>
   useQuery({
@@ -15,11 +17,20 @@ export const useBooking = (id) =>
     enabled:  !!id,
   });
 
-export const useCreateBooking = () =>
-  useMutation({
+export const useCreateBooking = () => {
+  // Note: hooks can't be called inside another hook's callback
+  // Instead add notification from the component that calls this mutation
+  return useMutation({
     mutationFn: (data) => api.post('/api/bookings', data).then(r => r.data.data),
-    onSuccess:  () => queryClient.invalidateQueries({ queryKey: ['bookings'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      toast.success('Booking created! Complete payment to confirm.');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Booking failed.');
+    },
   });
+};
 
 export const useCancelBooking = () =>
   useMutation({

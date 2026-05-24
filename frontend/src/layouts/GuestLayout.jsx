@@ -5,6 +5,7 @@ import {
 import { useAuthStore } from '../stores/authStore';
 import { useLogout } from '../hooks/useAuth';
 import MobileNav from '../components/ui/MobileNav';
+import NotificationsPanel from '../components/ui/NotificationsPanel';
 
 export default function GuestLayout() {
   const { user }       = useAuthStore();
@@ -69,6 +70,7 @@ export default function GuestLayout() {
               <span className="hidden sm:block text-sm font-medium text-gray-700 max-w-24 truncate">
                 {user?.name || user?.email}
               </span>
+              <NotificationsPanel />
               <button
                 onClick={() => logoutMutation.mutate()}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
