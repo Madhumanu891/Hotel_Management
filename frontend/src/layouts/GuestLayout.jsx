@@ -1,6 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom';
 import {
-  Hotel, Search, Calendar, User, LogOut, Star, Home,
+  Hotel, Search, Calendar, User, LogOut, Star, Home, Award,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useLogout } from '../hooks/useAuth';
@@ -8,13 +8,13 @@ import MobileNav from '../components/ui/MobileNav';
 import NotificationsPanel from '../components/ui/NotificationsPanel';
 
 export default function GuestLayout() {
-  const { user }       = useAuthStore();
+  const { user } = useAuthStore();
   const logoutMutation = useLogout();
 
   const tierColors = {
-    bronze:   'text-orange-600 bg-orange-50',
-    silver:   'text-gray-600 bg-gray-100',
-    gold:     'text-yellow-600 bg-yellow-50',
+    bronze: 'text-orange-600 bg-orange-50',
+    silver: 'text-gray-600 bg-gray-100',
+    gold: 'text-yellow-600 bg-yellow-50',
     platinum: 'text-purple-600 bg-purple-50',
   };
   const tier = user?.guestProfile?.loyaltyTier || 'bronze';
@@ -38,20 +38,20 @@ export default function GuestLayout() {
             {/* Desktop Nav links */}
             <div className="hidden md:flex items-center gap-1">
               {[
-                { to: '/dashboard/guest',          label: 'Home',     icon: Home     },
-                { to: '/dashboard/guest/search',   label: 'Search',   icon: Search   },
+                { to: '/dashboard/guest', label: 'Home', icon: Home },
+                { to: '/dashboard/guest/search', label: 'Search', icon: Search },
                 { to: '/dashboard/guest/bookings', label: 'Bookings', icon: Calendar },
-                { to: '/dashboard/guest/profile',  label: 'Profile',  icon: User     },
+                { to: '/dashboard/guest/loyalty', label: 'Rewards', icon: Award },
+                { to: '/dashboard/guest/profile', label: 'Profile', icon: User },
               ].map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
                   end={to === '/dashboard/guest'}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-primary-50 text-primary-700'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                      ? 'bg-primary-50 text-primary-700'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`
                   }
                 >

@@ -3,10 +3,11 @@ import { Home, Search, Calendar, User } from 'lucide-react';
 
 export default function MobileNav({ role }) {
   const guestNav = [
-    { to: '/dashboard/guest',          label: 'Home',     icon: Home     },
-    { to: '/dashboard/guest/search',   label: 'Search',   icon: Search   },
+    { to: '/dashboard/guest', label: 'Home', icon: Home },
+    { to: '/dashboard/guest/search', label: 'Search', icon: Search },
     { to: '/dashboard/guest/bookings', label: 'Bookings', icon: Calendar },
-    { to: '/dashboard/guest/profile',  label: 'Profile',  icon: User     },
+    { to: '/dashboard/guest/profile', label: 'Profile', icon: User },
+    { to: '/dashboard/guest/loyalty', label: 'Rewards', icon: Award },
   ];
 
   if (role !== 'guest') return null;
@@ -20,8 +21,7 @@ export default function MobileNav({ role }) {
             to={to}
             end={to === '/dashboard/guest'}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
-                isActive ? 'text-primary-700' : 'text-gray-400'
+              `flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${isActive ? 'text-primary-700' : 'text-gray-400'
               }`
             }
           >

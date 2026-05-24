@@ -34,6 +34,7 @@ import AccountantDashboard from '../pages/accountant/AccountantDashboard';
 import ProfilePage from '../pages/profile/ProfilePage';
 
 import BookingDetailPage from '../pages/guest/BookingDetailPage';
+import LoyaltyPage from '../pages/guest/LoyaltyPage';
 
 
 // const AccountantDashboard = () => (
@@ -64,6 +65,7 @@ export const router = createBrowserRouter([
       { path: 'bookings', element: <MyBookingsPage /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'bookings/:id', element: <BookingDetailPage /> },
+      { path: 'loyalty', element: <LoyaltyPage /> },
     ],
   },
 
