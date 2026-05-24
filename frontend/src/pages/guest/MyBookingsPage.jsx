@@ -1,25 +1,26 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Clock, XCircle, ChevronDown } from 'lucide-react';
 import { useMyBookings, useCancelBooking } from '../../hooks/useBookings';
 import Spinner from '../../components/ui/Spinner';
 
 const statusConfig = {
-  pending:     { label: 'Pending Payment', class: 'badge-warning' },
-  confirmed:   { label: 'Confirmed',       class: 'badge-success' },
-  checked_in:  { label: 'Checked In',      class: 'badge-info'    },
-  checked_out: { label: 'Completed',       class: 'badge-purple'  },
-  cancelled:   { label: 'Cancelled',       class: 'badge-error'   },
-  no_show:     { label: 'No Show',         class: 'badge-error'   },
+  pending: { label: 'Pending Payment', class: 'badge-warning' },
+  confirmed: { label: 'Confirmed', class: 'badge-success' },
+  checked_in: { label: 'Checked In', class: 'badge-info' },
+  checked_out: { label: 'Completed', class: 'badge-purple' },
+  cancelled: { label: 'Cancelled', class: 'badge-error' },
+  no_show: { label: 'No Show', class: 'badge-error' },
 };
 
 const BookingCard = ({ booking, onCancel }) => {
   const [expanded, setExpanded] = useState(false);
-  const status  = statusConfig[booking.status] || { label: booking.status, class: 'badge-info' };
+  const status = statusConfig[booking.status] || { label: booking.status, class: 'badge-info' };
   const canCancel = ['pending', 'confirmed'].includes(booking.status);
 
-  const checkIn  = new Date(booking.checkInDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const checkIn = new Date(booking.checkInDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   const checkOut = new Date(booking.checkOutDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-  const nights   = Math.ceil((new Date(booking.checkOutDate) - new Date(booking.checkInDate)) / (1000 * 60 * 60 * 24));
+  const nights = Math.ceil((new Date(booking.checkOutDate) - new Date(booking.checkInDate)) / (1000 * 60 * 60 * 24));
 
   return (
     <div className="card overflow-hidden">
@@ -27,9 +28,12 @@ const BookingCard = ({ booking, onCancel }) => {
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="font-mono text-sm font-bold text-primary-700">
+              <Link
+                to={`/dashboard/guest/bookings/${booking._id}`}
+                className="font-mono text-sm font-bold text-primary-700 hover:text-primary-800 hover:underline"
+              >
                 {booking.bookingRef}
-              </span>
+              </Link>
               <span className={status.class}>{status.label}</span>
             </div>
             <div className="space-y-1.5 text-sm text-gray-600">
@@ -108,7 +112,7 @@ const BookingCard = ({ booking, onCancel }) => {
 export default function MyBookingsPage() {
   const [filter, setFilter] = useState('all');
   const { data, isLoading } = useMyBookings(filter !== 'all' ? { status: filter } : {});
-  const cancelMutation      = useCancelBooking();
+  const cancelMutation = useCancelBooking();
 
   const handleCancel = (id) => {
     if (window.confirm('Are you sure you want to cancel this booking?')) {
@@ -117,10 +121,10 @@ export default function MyBookingsPage() {
   };
 
   const tabs = [
-    { key: 'all',       label: 'All' },
-    { key: 'pending',   label: 'Pending' },
+    { key: 'all', label: 'All' },
+    { key: 'pending', label: 'Pending' },
     { key: 'confirmed', label: 'Confirmed' },
-    { key: 'checked_in',label: 'Active' },
+    { key: 'checked_in', label: 'Active' },
     { key: 'cancelled', label: 'Cancelled' },
   ];
 
@@ -137,11 +141,10 @@ export default function MyBookingsPage() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-              filter === tab.key
-                ? 'bg-primary-700 text-white'
-                : 'bg-white text-gray-600 border hover:bg-gray-50'
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === tab.key
+              ? 'bg-primary-700 text-white'
+              : 'bg-white text-gray-600 border hover:bg-gray-50'
+              }`}
           >
             {tab.label}
           </button>

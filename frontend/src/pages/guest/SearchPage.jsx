@@ -216,11 +216,21 @@ export default function SearchPage() {
 
       {/* Results */}
       {isLoading && (
-        <div className="flex justify-center py-16">
-          <div className="text-center">
-            <Spinner size="lg" />
-            <p className="mt-4 text-gray-500">Searching available hotels...</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="card overflow-hidden animate-pulse">
+              <div className="h-48 bg-gray-200" />
+              <div className="p-5 space-y-3">
+                <div className="h-5 bg-gray-200 rounded w-3/4" />
+                <div className="h-4 bg-gray-200 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 rounded w-full" />
+                <div className="flex justify-between items-center">
+                  <div className="h-7 bg-gray-200 rounded w-24" />
+                  <div className="h-9 bg-gray-200 rounded w-20" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

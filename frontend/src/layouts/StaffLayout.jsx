@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import {
   Hotel, LayoutDashboard, Calendar, Users, Settings,
-  ClipboardList, ChefHat, BarChart3, LogOut, Menu, X,
+  ClipboardList, ChefHat, BarChart3, LogOut, Menu, X,User
 } from 'lucide-react';
 import { Activity } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';

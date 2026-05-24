@@ -33,6 +33,9 @@ import AccountantDashboard from '../pages/accountant/AccountantDashboard';
 
 import ProfilePage from '../pages/profile/ProfilePage';
 
+import BookingDetailPage from '../pages/guest/BookingDetailPage';
+
+
 // const AccountantDashboard = () => (
 //   <div className="card p-8">
 //     <h1 className="text-xl font-bold text-gray-900 mb-2">Accountant Dashboard</h1>
@@ -60,6 +63,7 @@ export const router = createBrowserRouter([
       { path: 'payment', element: <PaymentPage /> },
       { path: 'bookings', element: <MyBookingsPage /> },
       { path: 'profile', element: <ProfilePage /> },
+      { path: 'bookings/:id', element: <BookingDetailPage /> },
     ],
   },
 
