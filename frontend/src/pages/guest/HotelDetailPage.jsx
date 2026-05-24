@@ -7,22 +7,23 @@ import {
 } from 'lucide-react';
 import { useProperty, useRoomTypes } from '../../hooks/useProperties';
 import Spinner from '../../components/ui/Spinner';
+import ReviewsSection from '../../components/reviews/ReviewsSection';
 
 const amenityMap = {
-  wifi:        { icon: Wifi,            label: 'Free Wi-Fi' },
-  pool:        { icon: Waves,           label: 'Swimming Pool' },
-  gym:         { icon: Dumbbell,        label: 'Fitness Center' },
-  parking:     { icon: Car,             label: 'Free Parking' },
-  restaurant:  { icon: UtensilsCrossed, label: 'Restaurant' },
-  bar:         { icon: Coffee,          label: 'Bar & Lounge' },
+  wifi: { icon: Wifi, label: 'Free Wi-Fi' },
+  pool: { icon: Waves, label: 'Swimming Pool' },
+  gym: { icon: Dumbbell, label: 'Fitness Center' },
+  parking: { icon: Car, label: 'Free Parking' },
+  restaurant: { icon: UtensilsCrossed, label: 'Restaurant' },
+  bar: { icon: Coffee, label: 'Bar & Lounge' },
 };
 
 export default function HotelDetailPage() {
-  const { slug }    = useParams();
-  const navigate    = useNavigate();
+  const { slug } = useParams();
+  const navigate = useNavigate();
   const [imgIdx, setImgIdx] = useState(0);
 
-  const searchParams  = JSON.parse(sessionStorage.getItem('searchParams') || '{}');
+  const searchParams = JSON.parse(sessionStorage.getItem('searchParams') || '{}');
   const { data: property, isLoading } = useProperty(slug);
   const { data: roomTypes } = useRoomTypes(property?._id);
 
@@ -52,9 +53,9 @@ export default function HotelDetailPage() {
 
   const nights = searchParams.checkIn && searchParams.checkOut
     ? Math.ceil(
-        (new Date(searchParams.checkOut) - new Date(searchParams.checkIn))
-        / (1000 * 60 * 60 * 24)
-      )
+      (new Date(searchParams.checkOut) - new Date(searchParams.checkIn))
+      / (1000 * 60 * 60 * 24)
+    )
     : 1;
 
   return (
@@ -106,7 +107,7 @@ export default function HotelDetailPage() {
           {/* Header */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              {[1,2,3,4,5].map(i => (
+              {[1, 2, 3, 4, 5].map(i => (
                 <Star
                   key={i}
                   className={`h-4 w-4 ${i <= property.starRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}`}
@@ -156,10 +157,10 @@ export default function HotelDetailPage() {
             <h2 className="font-semibold text-gray-900 mb-4">Policies</h2>
             <div className="grid grid-cols-2 gap-4 text-sm">
               {[
-                { label: 'Check-in',    value: property.policies?.checkInTime    || '14:00' },
-                { label: 'Check-out',   value: property.policies?.checkOutTime   || '11:00' },
-                { label: 'Pets',        value: property.policies?.petsAllowed    ? 'Allowed' : 'Not allowed' },
-                { label: 'Smoking',     value: property.policies?.smokingAllowed ? 'Allowed' : 'Not allowed' },
+                { label: 'Check-in', value: property.policies?.checkInTime || '14:00' },
+                { label: 'Check-out', value: property.policies?.checkOutTime || '11:00' },
+                { label: 'Pets', value: property.policies?.petsAllowed ? 'Allowed' : 'Not allowed' },
+                { label: 'Smoking', value: property.policies?.smokingAllowed ? 'Allowed' : 'Not allowed' },
               ].map(p => (
                 <div key={p.label}>
                   <span className="text-gray-500">{p.label}: </span>
@@ -233,9 +234,9 @@ export default function HotelDetailPage() {
           <div className="space-y-4">
             {roomTypes.map(room => {
               const pricePerNight = room.basePrice;
-              const totalPrice    = pricePerNight * nights;
-              const tax           = Math.round(totalPrice * 0.18);
-              const grandTotal    = totalPrice + tax;
+              const totalPrice = pricePerNight * nights;
+              const tax = Math.round(totalPrice * 0.18);
+              const grandTotal = totalPrice + tax;
 
               return (
                 <div key={room._id} className="card p-6 hover:shadow-md transition-shadow">
@@ -298,6 +299,11 @@ export default function HotelDetailPage() {
           </div>
         )}
       </div>
+      <ReviewsSection
+        propertyId={property._id}
+        propertyName={property.name}
+        userBookingId={null}
+      />
     </div>
   );
 }
