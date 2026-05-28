@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   SlidersHorizontal, X, Star, Wifi, Dumbbell,
-  Waves, Car, Coffee, UtensilsCrossed, Spa,
+  Waves, Car, Coffee, UtensilsCrossed, Flower2,
   ChevronDown, ChevronUp,
 } from 'lucide-react';
 
@@ -9,7 +9,7 @@ const amenityOptions = [
   { key: 'wifi',        label: 'Free Wi-Fi',   icon: Wifi            },
   { key: 'pool',        label: 'Swimming Pool', icon: Waves           },
   { key: 'gym',         label: 'Fitness Center',icon: Dumbbell        },
-  { key: 'spa',         label: 'Spa',           icon: Spa             },
+  { key: 'spa',         label: 'Spa',           icon: Flower2             },
   { key: 'parking',     label: 'Free Parking',  icon: Car             },
   { key: 'restaurant',  label: 'Restaurant',    icon: UtensilsCrossed },
   { key: 'bar',         label: 'Bar',           icon: Coffee          },

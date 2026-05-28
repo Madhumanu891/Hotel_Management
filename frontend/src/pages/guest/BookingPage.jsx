@@ -1,115 +1,132 @@
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+// import { useForm } from 'react-hook-toast';
 import { useForm } from 'react-hook-form';
-import { MapPin, Calendar, Users, AlertCircle } from 'lucide-react';
+import {
+  Calendar, Users, BedDouble, MapPin,
+  ChevronRight, AlertCircle, Tag,
+} from 'lucide-react';
 import { useCreateBooking } from '../../hooks/useBookings';
-import Button from '../../components/ui/Button';
-import Alert  from '../../components/ui/Alert';
+import { useAuthStore }     from '../../stores/authStore';
+import Button  from '../../components/ui/Button';
+import Spinner from '../../components/ui/Spinner';
 
 export default function BookingPage() {
-  const navigate   = useNavigate();
-  const property   = JSON.parse(sessionStorage.getItem('selectedProperty') || 'null');
-  const roomType   = JSON.parse(sessionStorage.getItem('selectedRoomType') || 'null');
-  const params     = JSON.parse(sessionStorage.getItem('searchParams') || '{}');
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const { user }  = useAuthStore();
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: {
-      adults:   params.adults   || 1,
-      children: params.children || 0,
-    },
+  // Get data passed from HotelDetailPage via navigation state OR sessionStorage
+  const [searchParams]  = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('searchParams') || 'null'); }
+    catch { return null; }
+  });
+  const [selectedProperty] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('selectedProperty') || 'null'); }
+    catch { return null; }
+  });
+  const [selectedRoomType] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('selectedRoomType') || 'null'); }
+    catch { return null; }
   });
 
   const createBookingMutation = useCreateBooking();
 
-  if (!property || !roomType) {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      specialRequests: '',
+      adults:   searchParams?.adults   || 1,
+      children: searchParams?.children || 0,
+    },
+  });
+
+  // Guard — if no data, redirect back to search
+  useEffect(() => {
+    if (!selectedProperty || !selectedRoomType || !searchParams) {
+      navigate('/dashboard/guest/search');
+    }
+  }, []);
+
+  if (!selectedProperty || !selectedRoomType || !searchParams) {
     return (
-      <div className="card p-8 text-center">
-        <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-        <p className="font-medium text-gray-900 mb-2">No room selected</p>
-        <button onClick={() => navigate('/dashboard/guest/search')} className="btn-primary mt-4">
-          Search Hotels
-        </button>
+      <div className="flex justify-center py-16">
+        <Spinner size="lg" />
       </div>
     );
   }
 
-  const onSubmit = async (data) => {
-    try {
-      const booking = await createBookingMutation.mutateAsync({
-        propertyId:      property._id,
-        roomTypeId:      roomType._id,
-        checkInDate:     params.checkIn,
-        checkOutDate:    params.checkOut,
-        adults:          Number(data.adults),
-        children:        Number(data.children),
-        specialRequests: data.specialRequests,
-      });
+  const checkIn  = new Date(searchParams.checkIn);
+  const checkOut = new Date(searchParams.checkOut);
+  const nights   = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+  const basePrice    = selectedRoomType.basePrice || 0;
+  const taxAmount    = Math.round(basePrice * nights * 0.18);
+  const totalAmount  = (basePrice * nights) + taxAmount;
 
-      sessionStorage.setItem('pendingBooking', JSON.stringify(booking));
+  const onSubmit = async (formData) => {
+    try {
+      const bookingPayload = {
+        propertyId:      selectedProperty._id,
+        roomTypeId:      selectedRoomType._id,
+        checkInDate:     searchParams.checkIn,
+        checkOutDate:    searchParams.checkOut,
+        adults:          Number(formData.adults),
+        children:        Number(formData.children),
+        specialRequests: formData.specialRequests || '',
+        pricing: {
+          basePrice:   basePrice * nights,
+          taxAmount,
+          totalAmount,
+        },
+      };
+
+      const booking = await createBookingMutation.mutateAsync(bookingPayload);
+
+      // Store booking for payment page
+      sessionStorage.setItem('currentBooking', JSON.stringify(booking));
+
+      // Navigate to payment page
       navigate('/dashboard/guest/payment');
+
     } catch (err) {
-      // Error handled by mutation state
+      console.error('Booking error:', err);
     }
   };
 
-  const nights     = roomType.nights || 1;
-  const basePrice  = roomType.basePrice * nights;
-  const tax        = Math.round(basePrice * 0.18);
-  const total      = basePrice + tax;
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 pb-12">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Complete Your Booking</h1>
-        <p className="text-gray-500 mt-1">Review details and confirm your reservation</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Complete Your Booking
+        </h1>
+        <p className="text-gray-500 dark:text-slate-400 mt-1">
+          Review your details before confirming
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Booking summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Booking form */}
+        <div className="lg:col-span-3 space-y-4">
           <div className="card p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Booking Summary</h2>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-3 text-gray-600">
-                <MapPin className="h-4 w-4 text-primary-600" />
-                <span><strong>{property.name}</strong> — {property.location?.city}</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600">
-                <Calendar className="h-4 w-4 text-primary-600" />
-                <span>{params.checkIn} → {params.checkOut} ({nights} night{nights > 1 ? 's' : ''})</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600">
-                <Users className="h-4 w-4 text-primary-600" />
-                <span>{roomType.name} — up to {roomType.maxOccupancy} guests</span>
-              </div>
-            </div>
-          </div>
+            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">
+              Guest Details
+            </h2>
 
-          {/* Guest details form */}
-          <div className="card p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Guest Details</h2>
-
-            {createBookingMutation.isError && (
-              <div className="mb-4">
-                <Alert
-                  type="error"
-                  message={createBookingMutation.error?.response?.data?.message || 'Booking failed. Please try again.'}
-                />
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form id="booking-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="label">Adults</label>
-                  <select className="input" {...register('adults', { required: true })}>
-                    {[1,2,3,4].map(n => <option key={n} value={n}>{n}</option>)}
+                  <select className="input" {...register('adults')}>
+                    {[1,2,3,4,5,6].map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
                   <label className="label">Children</label>
                   <select className="input" {...register('children')}>
-                    {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
+                    {[0,1,2,3,4].map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -118,52 +135,125 @@ export default function BookingPage() {
                 <label className="label">Special Requests (optional)</label>
                 <textarea
                   rows={3}
-                  placeholder="Late check-in, dietary requirements, room preferences..."
                   className="input resize-none"
+                  placeholder="Early check-in, high floor, extra pillows..."
                   {...register('specialRequests')}
                 />
               </div>
-
-              {/* Cancellation policy */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-                <strong>Free cancellation</strong> up to 24 hours before check-in. After that, 50% refund applies.
-              </div>
-
-              <Button
-                type="submit"
-                loading={createBookingMutation.isPending}
-                className="w-full py-3 text-base"
-              >
-                Confirm Booking — ₹{total.toLocaleString()}
-              </Button>
             </form>
+          </div>
+
+          {/* Cancellation policy */}
+          <div className="card p-5">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="font-medium text-gray-900 dark:text-white text-sm">
+                  Free Cancellation
+                </div>
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+                  Cancel up to 24 hours before check-in for a full refund.
+                  After that, 1 night will be charged.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Price breakdown */}
-        <div>
-          <div className="card p-6 sticky top-24">
-            <h2 className="font-semibold text-gray-900 mb-4">Price Breakdown</h2>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between text-gray-600">
-                <span>₹{roomType.basePrice?.toLocaleString()} × {nights} night{nights > 1 ? 's' : ''}</span>
-                <span>₹{basePrice.toLocaleString()}</span>
+        {/* Booking summary */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="card p-5 sticky top-24">
+            {/* Property */}
+            <div className="flex items-start gap-3 mb-5 pb-5 border-b dark:border-slate-700">
+              <div className="h-14 w-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                {selectedProperty.images?.[0]?.url ? (
+                  <img
+                    src={selectedProperty.images[0].url}
+                    alt={selectedProperty.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-gray-300" />
+                  </div>
+                )}
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>GST (18%)</span>
-                <span>₹{tax.toLocaleString()}</span>
-              </div>
-              <div className="border-t pt-3 flex justify-between font-bold text-gray-900">
-                <span>Total</span>
-                <span>₹{total.toLocaleString()}</span>
+              <div>
+                <div className="font-semibold text-gray-900 dark:text-white text-sm">
+                  {selectedProperty.name}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                  {selectedProperty.location?.city}, {selectedProperty.location?.state}
+                </div>
+                <div className="text-xs text-primary-600 font-medium mt-1">
+                  {selectedRoomType.name}
+                </div>
               </div>
             </div>
-            <p className="mt-4 text-xs text-gray-500 text-center">
-              You will not be charged until payment is confirmed
+
+            {/* Dates */}
+            <div className="space-y-2 mb-5">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400">
+                  <Calendar className="h-4 w-4" />
+                  Check-in
+                </div>
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {checkIn.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400">
+                  <Calendar className="h-4 w-4" />
+                  Check-out
+                </div>
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {checkOut.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400">
+                  <BedDouble className="h-4 w-4" />
+                  Duration
+                </div>
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {nights} night{nights > 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+
+            {/* Price breakdown */}
+            <div className="space-y-2 text-sm border-t dark:border-slate-700 pt-4 mb-5">
+              <div className="flex justify-between text-gray-600 dark:text-slate-400">
+                <span>₹{basePrice.toLocaleString()} × {nights} night{nights > 1 ? 's' : ''}</span>
+                <span>₹{(basePrice * nights).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-gray-600 dark:text-slate-400">
+                <span>GST (18%)</span>
+                <span>₹{taxAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-bold text-gray-900 dark:text-white text-base pt-2 border-t dark:border-slate-700">
+                <span>Total</span>
+                <span>₹{totalAmount.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <Button
+              form="booking-form"
+              type="submit"
+              loading={createBookingMutation.isPending}
+              className="w-full py-3 text-base"
+            >
+              Proceed to Payment
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+
+            <p className="text-xs text-center text-gray-400 dark:text-slate-500 mt-3">
+              You will not be charged yet. Payment on next page.
             </p>
           </div>
         </div>
       </div>
     </div>
   );
-}
+}``

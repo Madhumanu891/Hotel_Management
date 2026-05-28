@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import {
   Hotel, LayoutDashboard, Calendar, Users, Settings,
-  ClipboardList, ChefHat, BarChart3, LogOut, Menu, X, User
+  ClipboardList, ChefHat, BarChart3, LogOut, Menu, X, User, Activity
 } from 'lucide-react';
-import { Activity } from 'lucide-react';
+// import { Activity } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useLogout } from '../hooks/useAuth';
 import NotificationsPanel from '../components/ui/NotificationsPanel';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 
 const navByRole = {
@@ -37,6 +38,7 @@ const navByRole = {
     { to: '/dashboard/admin/properties', label: 'Properties', icon: Hotel },
     { to: '/dashboard/admin/analytics', label: 'System', icon: Activity },
     { to: '/dashboard/admin/users', label: 'Overview', icon: Users },
+    { to: '/dashboard/admin/metrics', label: 'Metrics', icon: BarChart3 },
   ],
   hr_manager: [
     { to: '/dashboard/hr', label: 'Dashboard', icon: LayoutDashboard },
@@ -106,6 +108,9 @@ export default function StaffLayout() {
           </div>
 
         </div>
+        <div className="px-3 py-2">
+          <ThemeToggle />
+        </div>
         <div className="px-3 py-2 flex items-center justify-between">
           <span className="text-xs text-gray-400">Notifications</span>
           <NotificationsPanel />
@@ -149,6 +154,7 @@ export default function StaffLayout() {
             <span className="font-bold">NexoraHotels</span>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle compact />
             <NotificationsPanel />
             <button onClick={() => setSidebarOpen(true)}>
               <Menu className="h-6 w-6 text-gray-600" />

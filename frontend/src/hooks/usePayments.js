@@ -27,3 +27,20 @@ export const useMyPayments = () =>
     queryKey: ['payments', 'my'],
     queryFn:  () => api.get('/api/payments/my').then(r => r.data),
   });
+
+  export const useCapturePayment = () =>
+  useMutation({
+    mutationFn: (data) =>
+      api.post('/api/payments/capture', data).then(r => r.data.data),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+
+      toast.success('Payment successful! Booking confirmed.');
+    },
+
+    onError: () => {
+      toast.error('Payment capture failed.');
+    },
+  });

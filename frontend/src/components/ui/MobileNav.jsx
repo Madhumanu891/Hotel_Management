@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Search, Calendar, User } from 'lucide-react';
+import { Home, Search, Calendar, User,Award } from 'lucide-react';
 
 export default function MobileNav({ role }) {
   const guestNav = [

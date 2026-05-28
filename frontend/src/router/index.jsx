@@ -35,7 +35,12 @@ import ProfilePage from '../pages/profile/ProfilePage';
 
 import BookingDetailPage from '../pages/guest/BookingDetailPage';
 import LoyaltyPage from '../pages/guest/LoyaltyPage';
+import LandingPage from '../pages/guest/LandingPage';
+import NotFoundPage from '../pages/guest/NotFoundPage';
+import MetricsDashboard from '../pages/admin/MetricsDashboard';
 
+import PaymentSuccessPage from '../pages/guest/PaymentSuccessPage';
+import PaymentCancelPage from '../pages/guest/PaymentCancelPage';
 
 // const AccountantDashboard = () => (
 //   <div className="card p-8">
@@ -46,7 +51,7 @@ import LoyaltyPage from '../pages/guest/LoyaltyPage';
 
 export const router = createBrowserRouter([
   // ── Public ──────────────────────────────────────────────────────────────
-  { path: '/', element: <PublicRoute><LoginPage /></PublicRoute> },
+  { path: '/', element: <LandingPage /> },
   { path: '/login', element: <PublicRoute><LoginPage /></PublicRoute> },
   { path: '/register', element: <PublicRoute><RegisterPage /></PublicRoute> },
   { path: '/forgot-password', element: <PublicRoute><ForgotPasswordPage /></PublicRoute> },
@@ -66,6 +71,7 @@ export const router = createBrowserRouter([
       { path: 'profile', element: <ProfilePage /> },
       { path: 'bookings/:id', element: <BookingDetailPage /> },
       { path: 'loyalty', element: <LoyaltyPage /> },
+      // { path: 'payment', element: <PaymentPage /> },
     ],
   },
 
@@ -158,10 +164,13 @@ export const router = createBrowserRouter([
       { path: 'analytics', element: <AdminDashboard tab="health" /> },
       { path: 'users', element: <AdminDashboard tab="overview" /> },
       { path: 'profile', element: <ProfilePage /> },
-
+      { path: 'metrics', element: <MetricsDashboard /> },
     ],
   },
 
+   { path: '/payment/success', element: <PaymentSuccessPage /> },
+  { path: '/payment/cancel', element: <PaymentCancelPage /> },
+
   // ── Catch all ────────────────────────────────────────────────────────────
-  { path: '*', element: <LoginPage /> },
+  { path: '*', element: <NotFoundPage /> },
 ]);

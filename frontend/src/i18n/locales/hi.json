@@ -1,0 +1,80 @@
+{
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "save":    "बदलाव सहेजें",
+    "cancel":  "रद्द करें",
+    "confirm": "पुष्टि करें",
+    "search":  "खोजें",
+    "logout":  "साइन आउट",
+    "profile": "प्रोफ़ाइल",
+    "settings":"सेटिंग्स",
+    "back":    "वापस",
+    "noData":  "कोई डेटा नहीं मिला",
+    "error":   "कुछ गलत हुआ",
+    "retry":   "पुनः प्रयास"
+  },
+  "auth": {
+    "login":           "साइन इन",
+    "register":        "खाता बनाएं",
+    "logout":          "साइन आउट",
+    "email":           "ईमेल पता",
+    "password":        "पासवर्ड",
+    "forgotPassword":  "पासवर्ड भूल गए?",
+    "resetPassword":   "पासवर्ड रीसेट करें",
+    "welcomeBack":     "वापस स्वागत है",
+    "loginSuccess":    "आपका स्वागत है!",
+    "registerSuccess": "खाता सफलतापूर्वक बनाया गया!"
+  },
+  "nav": {
+    "home":      "होम",
+    "search":    "खोजें",
+    "bookings":  "बुकिंग",
+    "rewards":   "पुरस्कार",
+    "profile":   "प्रोफ़ाइल",
+    "dashboard": "डैशबोर्ड"
+  },
+  "search": {
+    "title":          "अपना आदर्श आवास खोजें",
+    "subtitle":       "हमारे प्रीमियम होटल संग्रह से खोजें",
+    "city":           "शहर",
+    "cityPlaceholder":"हैदराबाद, मुंबई...",
+    "checkIn":        "चेक-इन",
+    "checkOut":       "चेक-आउट",
+    "guests":         "मेहमान",
+    "adult":          "वयस्क",
+    "searchBtn":      "खोजें",
+    "noResults":      "कोई होटल नहीं मिला",
+    "loading":        "उपलब्ध होटल खोज रहे हैं...",
+    "enterDetails":   "उपलब्ध कमरे खोजने के लिए शहर और तारीखें दर्ज करें"
+  },
+  "booking": {
+    "title":       "अपनी बुकिंग पूरी करें",
+    "myBookings":  "मेरी बुकिंग",
+    "cancel":      "बुकिंग रद्द करें",
+    "status": {
+      "pending":     "भुगतान बाकी",
+      "confirmed":   "पुष्ट",
+      "checked_in":  "चेक इन",
+      "checked_out": "पूर्ण",
+      "cancelled":   "रद्द"
+    }
+  },
+  "loyalty": {
+    "title":    "लॉयल्टी कार्यक्रम",
+    "yourTier": "आपका स्तर",
+    "member":   "सदस्य",
+    "points":   "पॉइंट्स बैलेंस",
+    "stays":    "कुल ठहराव"
+  },
+  "profile": {
+    "title":    "मेरी प्रोफ़ाइल",
+    "personal": "व्यक्तिगत जानकारी",
+    "security": "सुरक्षा",
+    "account":  "खाता",
+    "signOut":  "साइन आउट"
+  },
+  "errors": {
+    "required":    "यह फ़ील्ड आवश्यक है",
+    "loginFailed": "लॉगिन विफल। कृपया अपनी जानकारी जांचें।"
+  }
+}

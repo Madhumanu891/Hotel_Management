@@ -9,8 +9,10 @@ import { useMe, useLogout } from '../../hooks/useAuth';
 import { useUpdateProfile, useChangePassword } from '../../hooks/useProfile';
 import { useAuthStore } from '../../stores/authStore';
 import Spinner from '../../components/ui/Spinner';
-import Button  from '../../components/ui/Button';
-import Alert   from '../../components/ui/Alert';
+import Button from '../../components/ui/Button';
+import Alert from '../../components/ui/Alert';
+import ThemeToggle from '../../components/ui/ThemeToggle';
+import LanguageSelector from '../../components/ui/LanguageSelector';
 
 // ── Avatar ──────────────────────────────────────────────────────────────────
 const Avatar = ({ name, size = 'lg' }) => {
@@ -36,9 +38,9 @@ const Avatar = ({ name, size = 'lg' }) => {
 // ── Tier Badge ───────────────────────────────────────────────────────────────
 const TierBadge = ({ tier }) => {
   const config = {
-    bronze:   { color: 'bg-orange-100 text-orange-700 border-orange-200', label: 'Bronze'   },
-    silver:   { color: 'bg-gray-100 text-gray-600 border-gray-300',       label: 'Silver'   },
-    gold:     { color: 'bg-yellow-100 text-yellow-700 border-yellow-200', label: 'Gold'     },
+    bronze: { color: 'bg-orange-100 text-orange-700 border-orange-200', label: 'Bronze' },
+    silver: { color: 'bg-gray-100 text-gray-600 border-gray-300', label: 'Silver' },
+    gold: { color: 'bg-yellow-100 text-yellow-700 border-yellow-200', label: 'Gold' },
     platinum: { color: 'bg-purple-100 text-purple-700 border-purple-200', label: 'Platinum' },
   };
   const t = config[tier] || config.bronze;
@@ -54,7 +56,7 @@ const TierBadge = ({ tier }) => {
 const ProfileForm = ({ user }) => {
   const { register, handleSubmit, formState: { errors, isDirty } } = useForm({
     defaultValues: {
-      name:  user?.name  || '',
+      name: user?.name || '',
       phone: user?.guestProfile?.phone || user?.staffProfile?.phone || '',
     },
   });
@@ -72,7 +74,7 @@ const ProfileForm = ({ user }) => {
             className={`input pl-9 ${errors.name ? 'input-error' : ''}`}
             placeholder="Your full name"
             {...register('name', {
-              required:  'Name is required',
+              required: 'Name is required',
               minLength: { value: 2, message: 'Min 2 characters' },
             })}
           />
@@ -121,7 +123,7 @@ const ProfileForm = ({ user }) => {
 // ── Change Password Form ─────────────────────────────────────────────────────
 const ChangePasswordForm = () => {
   const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew,     setShowNew]     = useState(false);
+  const [showNew, setShowNew] = useState(false);
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm();
   const changePwMutation = useChangePassword();
 
@@ -164,10 +166,10 @@ const ChangePasswordForm = () => {
             className={`input pl-9 pr-10 ${errors.newPassword ? 'input-error' : ''}`}
             placeholder="Create a strong password"
             {...register('newPassword', {
-              required:  'New password is required',
+              required: 'New password is required',
               minLength: { value: 8, message: 'Min 8 characters' },
               pattern: {
-                value:   /(?=.*[A-Z])(?=.*\d)/,
+                value: /(?=.*[A-Z])(?=.*\d)/,
                 message: 'Must contain uppercase and number',
               },
               validate: (v) =>
@@ -227,22 +229,22 @@ const ChangePasswordForm = () => {
 
 // ── Main Profile Page ────────────────────────────────────────────────────────
 export default function ProfilePage() {
-  const { user }       = useAuthStore();
+  const { user } = useAuthStore();
   const { data: me, isLoading } = useMe();
   const logoutMutation = useLogout();
-  const [activeTab,    setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('profile');
 
   const profile = me || user;
 
-  const tierPoints  = profile?.guestProfile?.loyaltyPoints || 0;
-  const tier        = profile?.guestProfile?.loyaltyTier   || 'bronze';
-  const tierMax     = { bronze: 500, silver: 1000, gold: 2000, platinum: 2000 };
-  const progress    = Math.min((tierPoints / tierMax[tier]) * 100, 100);
+  const tierPoints = profile?.guestProfile?.loyaltyPoints || 0;
+  const tier = profile?.guestProfile?.loyaltyTier || 'bronze';
+  const tierMax = { bronze: 500, silver: 1000, gold: 2000, platinum: 2000 };
+  const progress = Math.min((tierPoints / tierMax[tier]) * 100, 100);
 
   const tabs = [
-    { key: 'profile',  label: 'Profile',  icon: User   },
+    { key: 'profile', label: 'Profile', icon: User },
     { key: 'security', label: 'Security', icon: Shield },
-    { key: 'account',  label: 'Account',  icon: Bell   },
+    { key: 'account', label: 'Account', icon: Bell },
   ];
 
   if (isLoading) {
@@ -339,11 +341,10 @@ export default function ProfilePage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+              }`}
           >
             <tab.icon className="h-4 w-4" />
             {tab.label}
@@ -375,7 +376,7 @@ export default function ProfilePage() {
             <div className="space-y-3 mt-4">
               {[
                 { label: 'Two-factor authentication', status: 'Not enabled', action: 'Enable' },
-                { label: 'Login notifications',       status: 'Enabled',     action: 'Disable' },
+                { label: 'Login notifications', status: 'Enabled', action: 'Disable' },
               ].map(item => (
                 <div key={item.label} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                   <div>
@@ -403,8 +404,8 @@ export default function ProfilePage() {
                 <span className="font-medium text-gray-900">
                   {profile?.createdAt
                     ? new Date(profile.createdAt).toLocaleDateString('en-IN', {
-                        day: 'numeric', month: 'long', year: 'numeric',
-                      })
+                      day: 'numeric', month: 'long', year: 'numeric',
+                    })
                     : 'Unknown'}
                 </span>
               </div>
@@ -421,6 +422,23 @@ export default function ProfilePage() {
                 </span>
               </div>
             </div>
+          </div>
+
+          <div className="card p-6">
+            <h2 className="font-semibold text-gray-900 dark:text-slate-100 mb-1">
+              Appearance
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
+              Choose your preferred theme
+            </p>
+            <ThemeToggle />
+          </div>
+          <div className="card p-6">
+            <h2 className="font-semibold text-gray-900 dark:text-slate-100 mb-1">Language</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
+              Choose your preferred language
+            </p>
+            <LanguageSelector />
           </div>
 
           <div className="card p-6">

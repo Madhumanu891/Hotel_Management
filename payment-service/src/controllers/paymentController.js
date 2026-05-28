@@ -1,5 +1,10 @@
 const paymentService = require('../services/paymentService');
 const asyncHandler   = require('../../../shared/utils/asyncHandler');
+const Payment = require('../models/Payment.model');
+const { publishEvent } = require('../../../shared/events/rabbitmq');
+const { NotFoundError } = require('../../../shared/errors');
+
+
 
 const createOrder = asyncHandler(async (req, res) => {
   const { bookingId, bookingRef, amount } = req.body;
@@ -56,10 +61,56 @@ const getMyPayments = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, ...result });
 });
 
+
+const mockCapturePayment = asyncHandler(async (req, res) => {
+  const { bookingId, paymentId } = req.body;
+
+  // Find by paymentId first, then fallback to bookingId
+  let payment = paymentId
+    ? await Payment.findById(paymentId)
+    : await Payment.findOne({ bookingId });
+
+  // If still no payment, create one on the fly
+  if (!payment) {
+    const paymentRef = `PAY-${Date.now()}-${Math.random().toString(36).substr(2,5).toUpperCase()}`;
+    payment = await Payment.create({
+      bookingId,
+      bookingRef: req.body.bookingRef || 'BK-UNKNOWN',
+      guestId:    req.user._id,
+      amount:     req.body.amount || 0,
+      currency:   'INR',
+      method:     'paypal',
+      status:     'pending',
+      paymentRef,
+    });
+  }
+
+  payment.status          = 'completed';
+  payment.gatewayPaymentId = `MOCK-${Date.now()}`;
+  payment.paidAt           = new Date();
+  await payment.save();
+
+  // Publish event so booking-service confirms the booking
+  await publishEvent('payment.completed', {
+    bookingId:  payment.bookingId,
+    paymentId:  payment._id,
+    paymentRef: payment.paymentRef,
+    amount:     payment.amount,
+    guestId:    payment.guestId,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'Payment successful',
+    data:    payment,
+  });
+});
+
 module.exports = {
   createOrder,
   capturePayment,
   processRefund,
+  mockCapturePayment,
   getPaymentByBooking,
   getMyPayments,
 };

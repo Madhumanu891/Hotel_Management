@@ -82,14 +82,14 @@ const checkAvailability = async ({
     checkOutDate: { $gt: checkIn },
   });
 
-const availableCount = totalRooms - blockedRooms;
+  const availableCount = totalRooms - blockedRooms;
 
-return {
-  available: availableCount > 0,  
-  availableCount: Math.max(0, availableCount),
-  totalRooms,
-  blockedRooms,
-};
+  return {
+    available: availableCount > 0,
+    availableCount: Math.max(0, availableCount),
+    totalRooms,
+    blockedRooms,
+  };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -176,6 +176,7 @@ const createBooking = async ({
   if (!availability.available) {
     throw new AppError(
       `No rooms available for the selected dates. ${availability.availableCount} rooms remaining.`,
+      409,
       "NO_AVAILABILITY",
     );
   }

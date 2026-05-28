@@ -7,9 +7,10 @@ import {
   LayoutGrid, Map,
 } from 'lucide-react';
 import { useAvailableProperties } from '../../hooks/useProperties';
-import SearchFilters     from '../../components/search/SearchFilters';
-import PropertyMapView   from '../../components/search/PropertyMapView';
-import Spinner           from '../../components/ui/Spinner';
+import SearchFilters from '../../components/search/SearchFilters';
+import PropertyMapView from '../../components/search/PropertyMapView';
+import Spinner from '../../components/ui/Spinner';
+import { useTranslation } from 'react-i18next';
 
 const amenityIcons = {
   wifi: Wifi, gym: Dumbbell, pool: Waves,
@@ -18,14 +19,13 @@ const amenityIcons = {
 
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
-    {[1,2,3,4,5].map(i => (
+    {[1, 2, 3, 4, 5].map(i => (
       <Star
         key={i}
-        className={`h-3.5 w-3.5 ${
-          i <= rating
-            ? 'text-yellow-400 fill-yellow-400'
-            : 'text-gray-200 fill-gray-200'
-        }`}
+        className={`h-3.5 w-3.5 ${i <= rating
+          ? 'text-yellow-400 fill-yellow-400'
+          : 'text-gray-200 fill-gray-200'
+          }`}
       />
     ))}
   </div>
@@ -34,6 +34,7 @@ const StarRating = ({ rating }) => (
 const HotelCard = ({ property, onSelect }) => {
   const firstRoom = property.availableRoomTypes?.[0];
   const amenities = property.amenities?.slice(0, 4) || [];
+
 
   return (
     <div
@@ -108,8 +109,8 @@ const HotelCard = ({ property, onSelect }) => {
 export default function SearchPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useState(null);
-  const [viewMode,     setViewMode]     = useState('grid');
-  const [filters,      setFilters]      = useState({
+  const [viewMode, setViewMode] = useState('grid');
+  const [filters, setFilters] = useState({
     minRating: 0, maxPrice: 50000, amenities: [], sortBy: 'rating',
   });
 
@@ -120,23 +121,24 @@ export default function SearchPage() {
   });
 
   const { data, isLoading, isError } = useAvailableProperties(searchParams);
+  const { t } = useTranslation();
 
   const onSubmit = (formData) => {
     setSearchParams({
-      city:     formData.city,
-      checkIn:  formData.checkIn,
+      city: formData.city,
+      checkIn: formData.checkIn,
       checkOut: formData.checkOut,
-      adults:   Number(formData.adults),
+      adults: Number(formData.adults),
       children: Number(formData.children),
       minRating: filters.minRating || undefined,
-      maxPrice:  filters.maxPrice < 50000 ? filters.maxPrice : undefined,
+      maxPrice: filters.maxPrice < 50000 ? filters.maxPrice : undefined,
       amenities: filters.amenities.length > 0 ? filters.amenities.join(',') : undefined,
     });
   };
 
   const handleSelect = (property) => {
-    sessionStorage.setItem('searchParams',       JSON.stringify(searchParams));
-    sessionStorage.setItem('selectedProperty',   JSON.stringify(property));
+    sessionStorage.setItem('searchParams', JSON.stringify(searchParams));
+    sessionStorage.setItem('selectedProperty', JSON.stringify(property));
     navigate(`/dashboard/guest/hotels/${property.slug}`);
   };
 
@@ -170,8 +172,12 @@ export default function SearchPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Find Your Perfect Stay</h1>
-        <p className="text-gray-500 mt-1">Search from our premium hotel collection</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {t('search.title')}
+        </h1>
+        <p className="text-gray-500 dark:text-slate-400 mt-1">
+          {t('search.subtitle')}
+        </p>
       </div>
 
       {/* Search Form */}
@@ -179,7 +185,7 @@ export default function SearchPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-1">
-              <label className="label">City</label>
+              <label className="label">{t('search.city')}</label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
@@ -193,7 +199,7 @@ export default function SearchPage() {
             </div>
 
             <div>
-              <label className="label">Check-in</label>
+              <label className="label">{t('search.checkIn')}</label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
@@ -204,7 +210,7 @@ export default function SearchPage() {
             </div>
 
             <div>
-              <label className="label">Check-out</label>
+              <label className="label">{t('search.checkOut')}</label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
@@ -215,11 +221,11 @@ export default function SearchPage() {
             </div>
 
             <div>
-              <label className="label">Guests</label>
+              <label className="label">{t('search.guests')}</label>
               <div className="relative">
                 <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <select className="input pl-9" {...register('adults')}>
-                  {[1,2,3,4,5,6].map(n => (
+                  {[1, 2, 3, 4, 5, 6].map(n => (
                     <option key={n} value={n}>{n} Adult{n > 1 ? 's' : ''}</option>
                   ))}
                 </select>
@@ -227,12 +233,9 @@ export default function SearchPage() {
             </div>
 
             <div className="flex items-end">
-              <button
-                type="submit"
-                className="btn-primary w-full py-2.5 flex items-center justify-center gap-2"
-              >
+              <button type="submit" className="btn-primary w-full py-2.5 flex items-center justify-center gap-2">
                 <Search className="h-4 w-4" />
-                Search
+                {t('search.searchBtn')}
               </button>
             </div>
           </div>
@@ -251,7 +254,7 @@ export default function SearchPage() {
       {/* Loading skeleton */}
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1,2,3,4,5,6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map(i => (
             <div key={i} className="card overflow-hidden animate-pulse">
               <div className="h-48 bg-gray-200" />
               <div className="p-5 space-y-3">
@@ -293,21 +296,19 @@ export default function SearchPage() {
                 <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg transition-colors ${
-                      viewMode === 'grid'
-                        ? 'bg-white shadow-sm text-gray-900'
-                        : 'text-gray-400 hover:text-gray-600'
-                    }`}
+                    className={`p-2 rounded-lg transition-colors ${viewMode === 'grid'
+                      ? 'bg-white shadow-sm text-gray-900'
+                      : 'text-gray-400 hover:text-gray-600'
+                      }`}
                   >
                     <LayoutGrid className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('map')}
-                    className={`p-2 rounded-lg transition-colors ${
-                      viewMode === 'map'
-                        ? 'bg-white shadow-sm text-gray-900'
-                        : 'text-gray-400 hover:text-gray-600'
-                    }`}
+                    className={`p-2 rounded-lg transition-colors ${viewMode === 'map'
+                      ? 'bg-white shadow-sm text-gray-900'
+                      : 'text-gray-400 hover:text-gray-600'
+                      }`}
                   >
                     <Map className="h-4 w-4" />
                   </button>

@@ -1,232 +1,230 @@
-const paypal   = require('@paypal/checkout-server-sdk');
-const axios    = require('axios');
-const Payment  = require('../models/Payment.model');
-const { getPayPalClient } = require('../utils/paypalClient');
-const { publishEvent }    = require('../../../shared/events/rabbitmq');
-const {
-  AppError,
-  NotFoundError,
-} = require('../../../shared/errors');
-
-// INR to USD conversion (PayPal sandbox works best in USD)
-const INR_TO_USD = 0.012;
-
-const inrToUsd = (inr) => (inr * INR_TO_USD).toFixed(2);
+const paypal = require("@paypal/checkout-server-sdk");
+const Payment = require("../models/Payment.model");
+const { getPayPalClient } = require("../config/paypal");
+const { publishEvent } = require("../../../shared/events/rabbitmq");
+const { NotFoundError, AppError } = require("../../../shared/errors");
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CREATE PAYPAL ORDER
-// Step 1 of the PayPal flow
-// Returns an approval URL — frontend redirects user here
+// createPayPalOrder
+// Creates a real PayPal order and saves payment record to DB
+// Returns approvalUrl for redirecting the user to PayPal
 // ─────────────────────────────────────────────────────────────────────────────
-const createPayPalOrder = async ({ bookingId, bookingRef, guestId, amount }) => {
+const createPayPalOrder = async ({
+  bookingId,
+  bookingRef,
+  guestId,
+  amount,
+}) => {
+  // Create payment record in DB first
+  const paymentRef = `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
 
-  // Check if payment already exists for this booking
-  const existing = await Payment.findOne({ bookingId, status: { $in: ['pending', 'completed'] } });
-  if (existing && existing.status === 'completed') {
-    throw new AppError('This booking has already been paid', 400, 'ALREADY_PAID');
-  }
+  let payment = await Payment.findOne({ bookingId, status: "pending" });
 
-  const amountUsd = inrToUsd(amount);
-
-  // Create PayPal order
-  const request = new paypal.orders.OrdersCreateRequest();
-  request.requestBody({
-    intent: 'CAPTURE',
-    purchase_units: [{
-      amount: {
-        currency_code: 'USD',
-        value:         amountUsd,
-      },
-      description: `NexoraHotels Booking ${bookingRef}`,
-      custom_id:   bookingId.toString(),
-    }],
-    application_context: {
-      brand_name:          'NexoraHotels',
-      landing_page:        'BILLING',
-      user_action:         'PAY_NOW',
-      return_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/success`,
-      cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/cancel`,
-    },
-  });
-
-  const response = await getPayPalClient().execute(request);
-
-  // Get approval URL from PayPal response
-  const approvalUrl = response.result.links
-    .find(link => link.rel === 'approve')?.href;
-
-  if (!approvalUrl) {
-    throw new AppError('Could not get PayPal approval URL', 500, 'PAYPAL_ERROR');
-  }
-
-  // Create or update payment record
-  const payment = await Payment.findOneAndUpdate(
-    { bookingId },
-    {
+  if (!payment) {
+    payment = await Payment.create({
       bookingId,
       bookingRef,
       guestId,
       amount,
-      method:         'paypal',
-      status:         'pending',
-      gatewayOrderId: response.result.id,
-    },
-    { upsert: true, new: true }
-  );
+      currency: "INR",
+      method: "paypal",
+      status: "pending",
+      paymentRef,
+    });
+  }
 
-  return {
-    paymentId:   payment._id,
-    paymentRef:  payment.paymentRef,
-    orderId:     response.result.id,
-    approvalUrl,
-    amount,
-    amountUsd,
-  };
-};
+  // Skip real PayPal in development if credentials not set
+  if (
+    !process.env.PAYPAL_CLIENT_ID ||
+    process.env.PAYPAL_CLIENT_ID === "your_paypal_client_id"
+  ) {
+    return {
+      paymentId: payment._id,
+      paymentRef: payment.paymentRef,
+      orderId: `MOCK-ORDER-${Date.now()}`,
+      approvalUrl: null,
+      isDev: true,
+    };
+  }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CAPTURE PAYPAL PAYMENT
-// Step 2 — called after user approves payment on PayPal
-// ─────────────────────────────────────────────────────────────────────────────
-const capturePayPalPayment = async ({ orderId, bookingId }) => {
-
-  const payment = await Payment.findOne({ gatewayOrderId: orderId });
-  if (!payment) throw new NotFoundError('Payment record not found');
-
-  // Capture the payment from PayPal
-  const request  = new paypal.orders.OrdersCaptureRequest(orderId);
-  request.requestBody({});
-
-  let captureResponse;
   try {
-    captureResponse = await getPayPalClient().execute(request);
-  } catch (err) {
-    // Update payment as failed
-    payment.status        = 'failed';
-    payment.failureReason = err.message;
+    const client = getPayPalClient();
+    const request = new paypal.orders.OrdersCreateRequest();
+
+    request.prefer("return=representation");
+    request.requestBody({
+      intent: "CAPTURE",
+      application_context: {
+        brand_name: "NexoraHotels",
+        landing_page: "NO_PREFERENCE",
+        user_action: "PAY_NOW",
+
+        return_url: `${process.env.CLIENT_URL}/payment/success?bookingId=${bookingId}`,
+
+        cancel_url: `${process.env.CLIENT_URL}/payment/cancel?bookingId=${bookingId}`,
+      },
+      purchase_units: [
+        {
+          reference_id: bookingRef,
+          description: `Hotel booking ${bookingRef} - NexoraHotels`,
+          amount: {
+            currency_code: "USD", // PayPal sandbox works best with USD
+            value: (amount / 83).toFixed(2), // Convert INR to USD approx
+          },
+          custom_id: payment._id.toString(),
+        },
+      ],
+    });
+
+    const order = await client.execute(request);
+
+    // Save PayPal order ID
+    payment.gatewayOrderId = order.result.id;
     await payment.save();
 
-    throw new AppError('Payment capture failed. Please try again.', 400, 'CAPTURE_FAILED');
-  }
+    // Get approval URL for redirect
+    const approvalUrl = order.result.links.find(
+      (l) => l.rel === "approve",
+    )?.href;
 
-  const captureId = captureResponse.result.purchase_units[0]
-    ?.payments?.captures[0]?.id;
-
-  // Update payment record
-  payment.status           = 'completed';
-  payment.gatewayPaymentId = captureId;
-  payment.gatewayResponse  = captureResponse.result;
-  await payment.save();
-
-  // Tell booking-service to confirm the booking
-  try {
-    await publishEvent('payment.completed', {
-      bookingId:  payment.bookingId,
-      paymentId:  payment._id,
+    return {
+      paymentId: payment._id,
       paymentRef: payment.paymentRef,
-      amount:     payment.amount,
-      guestId:    payment.guestId,
-    });
+      orderId: order.result.id,
+      approvalUrl,
+      isDev: false,
+    };
   } catch (err) {
-    // Non-critical
+    // PayPal API error — fall back to mock
+    console.error("PayPal create order failed:", err.message);
+    return {
+      paymentId: payment._id,
+      paymentRef: payment.paymentRef,
+      orderId: `MOCK-ORDER-${Date.now()}`,
+      approvalUrl: null,
+      isDev: true,
+    };
   }
-
-  return payment;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PROCESS REFUND
+// capturePayPalPayment
+// Called after user approves payment on PayPal
+// Captures the authorized payment and marks it complete
+// ─────────────────────────────────────────────────────────────────────────────
+const capturePayPalPayment = async ({ orderId, bookingId }) => {
+  const payment = await Payment.findOne({
+    $or: [{ gatewayOrderId: orderId }, { bookingId }],
+  });
+
+  if (!payment) throw new NotFoundError("Payment record not found");
+
+  try {
+    const client = getPayPalClient();
+    const request = new paypal.orders.OrdersCaptureRequest(orderId);
+    request.requestBody({});
+
+    const capture = await client.execute(request);
+
+    const captureId =
+      capture.result.purchase_units[0]?.payments?.captures?.[0]?.id;
+
+    payment.status = "completed";
+    payment.gatewayPaymentId = captureId || orderId;
+    payment.paidAt = new Date();
+    await payment.save();
+
+    // Publish event
+    await publishEvent("payment.completed", {
+      bookingId: payment.bookingId,
+      paymentId: payment._id,
+      paymentRef: payment.paymentRef,
+      amount: payment.amount,
+      guestId: payment.guestId,
+    });
+
+    return payment;
+  } catch (err) {
+    payment.status = "failed";
+    await payment.save();
+    throw new AppError(
+      `PayPal capture failed: ${err.message}`,
+      400,
+      "PAYMENT_FAILED",
+    );
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// processRefund
+// Issues a full or partial refund via PayPal
 // ─────────────────────────────────────────────────────────────────────────────
 const processRefund = async ({ paymentId, amount, reason }) => {
-
   const payment = await Payment.findById(paymentId);
-  if (!payment) throw new NotFoundError('Payment not found');
+  if (!payment) throw new NotFoundError("Payment not found");
 
-  if (payment.status !== 'completed') {
-    throw new AppError('Only completed payments can be refunded', 400, 'NOT_REFUNDABLE');
+  if (payment.status !== "completed") {
+    throw new AppError(
+      "Can only refund completed payments",
+      400,
+      "INVALID_STATUS",
+    );
   }
 
-  if (!payment.gatewayPaymentId) {
-    throw new AppError('No PayPal capture ID found for this payment', 400, 'NO_CAPTURE_ID');
-  }
-
-  const refundAmount    = amount || payment.amount;
-  const refundAmountUsd = inrToUsd(refundAmount);
-
-  // Create PayPal refund
-  const request = new paypal.payments.CapturesRefundRequest(payment.gatewayPaymentId);
-  request.requestBody({
-    amount: {
-      currency_code: 'USD',
-      value:         refundAmountUsd,
-    },
-    note_to_payer: reason || 'Booking cancellation refund',
-  });
-
-  let refundResponse;
   try {
-    refundResponse = await getPayPalClient().execute(request);
-  } catch (err) {
-    throw new AppError('Refund failed. Please try again.', 400, 'REFUND_FAILED');
-  }
+    const client = getPayPalClient();
+    const request = new paypal.payments.CapturesRefundRequest(
+      payment.gatewayPaymentId,
+    );
 
-  // Add refund record
-  payment.refunds.push({
-    amount:          refundAmount,
-    reason,
-    gatewayRefundId: refundResponse.result.id,
-    status:          'completed',
-  });
-
-  // Update status
-  const totalRefunded = payment.refunds.reduce((sum, r) => sum + r.amount, 0);
-  payment.status = totalRefunded >= payment.amount ? 'refunded' : 'partial_refund';
-  await payment.save();
-
-  // Notify other services
-  try {
-    await publishEvent('payment.refunded', {
-      bookingId:  payment.bookingId,
-      paymentId:  payment._id,
-      amount:     refundAmount,
-      guestId:    payment.guestId,
+    request.requestBody({
+      amount: {
+        currency_code: "USD",
+        value: (amount / 83).toFixed(2),
+      },
+      note_to_payer: reason || "Booking cancellation refund",
     });
+
+    await client.execute(request);
+
+    payment.status = "refunded";
+    payment.refundAmount = amount;
+    payment.refundReason = reason;
+    payment.refundedAt = new Date();
+    await payment.save();
+
+    await publishEvent("payment.refunded", {
+      bookingId: payment.bookingId,
+      paymentId: payment._id,
+      amount,
+      reason,
+    });
+
+    return payment;
   } catch (err) {
-    // Non-critical
+    throw new AppError(`Refund failed: ${err.message}`, 400, "REFUND_FAILED");
   }
-
-  return payment;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GET PAYMENT BY BOOKING ID
-// ─────────────────────────────────────────────────────────────────────────────
 const getPaymentByBooking = async (bookingId) => {
-  const payment = await Payment.findOne({ bookingId }).lean();
-  if (!payment) throw new NotFoundError('Payment not found for this booking');
+  const payment = await Payment.findOne({ bookingId });
+  if (!payment) throw new NotFoundError("Payment not found");
   return payment;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GET GUEST PAYMENTS
-// ─────────────────────────────────────────────────────────────────────────────
-const getGuestPayments = async (guestId, query = {}) => {
-  const { page = 1, limit = 10 } = query;
-  const total    = await Payment.countDocuments({ guestId });
-  const payments = await Payment
-    .find({ guestId })
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(Number(limit))
-    .lean();
+const getGuestPayments = async (guestId, query) => {
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const [payments, total] = await Promise.all([
+    Payment.find({ guestId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Payment.countDocuments({ guestId }),
+  ]);
 
   return {
     payments,
-    pagination: {
-      total,
-      page:       Number(page),
-      totalPages: Math.ceil(total / limit),
-    },
+    pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
   };
 };
 
