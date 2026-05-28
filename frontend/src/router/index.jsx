@@ -39,8 +39,8 @@ import LandingPage from '../pages/guest/LandingPage';
 import NotFoundPage from '../pages/guest/NotFoundPage';
 import MetricsDashboard from '../pages/admin/MetricsDashboard';
 
-import PaymentSuccessPage from '../pages/guest/PaymentSuccessPage';
-import PaymentCancelPage from '../pages/guest/PaymentCancelPage';
+// import PaymentSuccessPage from '../pages/guest/PaymentSuccessPage';
+// import PaymentCancelPage from '../pages/guest/PaymentCancelPage';
 
 // const AccountantDashboard = () => (
 //   <div className="card p-8">
@@ -68,10 +68,9 @@ export const router = createBrowserRouter([
       { path: 'book', element: <BookingPage /> },
       { path: 'payment', element: <PaymentPage /> },
       { path: 'bookings', element: <MyBookingsPage /> },
-      { path: 'profile', element: <ProfilePage /> },
       { path: 'bookings/:id', element: <BookingDetailPage /> },
       { path: 'loyalty', element: <LoyaltyPage /> },
-      // { path: 'payment', element: <PaymentPage /> },
+      { path: 'profile', element: <ProfilePage /> },
     ],
   },
 
@@ -168,8 +167,8 @@ export const router = createBrowserRouter([
     ],
   },
 
-   { path: '/payment/success', element: <PaymentSuccessPage /> },
-  { path: '/payment/cancel', element: <PaymentCancelPage /> },
+  // { path: '/payment/success', element: <PaymentSuccessPage /> },
+  // { path: '/payment/cancel', element: <PaymentCancelPage /> },
 
   // ── Catch all ────────────────────────────────────────────────────────────
   { path: '*', element: <NotFoundPage /> },

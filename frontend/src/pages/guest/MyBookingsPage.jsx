@@ -142,8 +142,8 @@ export default function MyBookingsPage() {
             key={tab.key}
             onClick={() => setFilter(tab.key)}
             className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === tab.key
-              ? 'bg-primary-700 text-white'
-              : 'bg-white text-gray-600 border hover:bg-gray-50'
+                ? 'bg-primary-700 text-white'
+                : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 border dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
               }`}
           >
             {tab.label}
