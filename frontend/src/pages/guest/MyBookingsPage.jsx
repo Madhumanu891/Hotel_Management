@@ -142,8 +142,8 @@ export default function MyBookingsPage() {
             key={tab.key}
             onClick={() => setFilter(tab.key)}
             className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === tab.key
-                ? 'bg-primary-700 text-white'
-                : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 border dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
+              ? 'bg-primary-700 text-white'
+              : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 border dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
               }`}
           >
             {tab.label}
@@ -154,18 +154,13 @@ export default function MyBookingsPage() {
       {isLoading ? (
         <div className="flex justify-center py-12"><Spinner size="lg" /></div>
       ) : data?.bookings?.length === 0 ? (
-        <div className="card p-12 text-center">
-          <Calendar className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-          <h3 className="font-semibold text-gray-900 mb-2">No bookings found</h3>
-          <p className="text-gray-500 mb-6">Start by searching for a hotel</p>
-          <a href="/dashboard/guest/search" className="btn-primary">Search Hotels</a>
-        </div>
+     "fix: guest flow - payment, dark mode, mobile nav, layout polish"
       ) : (
-        <div className="space-y-4">
-          {data?.bookings?.map(booking => (
-            <BookingCard key={booking._id} booking={booking} onCancel={handleCancel} />
-          ))}
-        </div>
+      <div className="space-y-4">
+        {data?.bookings?.map(booking => (
+          <BookingCard key={booking._id} booking={booking} onCancel={handleCancel} />
+        ))}
+      </div>
       )}
     </div>
   );

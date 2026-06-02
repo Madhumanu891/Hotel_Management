@@ -162,6 +162,11 @@ const searchAvailable = asyncHandler(async (req, res) => {
   });
 });
 
+const getPropertyById= asyncHandler(async (req, res) => {
+  const property = await propertyService.getPropertyById(req.params.id);
+  res.status(200).json({ success: true, data: property });
+});
+
 module.exports = {
   getProperties,
   getPropertyBySlug,
@@ -178,4 +183,5 @@ module.exports = {
   createRoom,
   updateRoomStatus,
   searchAvailable,
+  getPropertyById,
 };

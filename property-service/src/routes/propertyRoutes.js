@@ -1,105 +1,125 @@
-const router     = require('express').Router();
-const ctrl       = require('../controllers/propertyController');
-const { protect, restrictTo } = require('../middlewares/auth');
-const upload     = require('../middlewares/upload');
-const validate   = require('../../../shared/middlewares/validate');
+const router = require("express").Router();
+const ctrl = require("../controllers/propertyController");
+const { protect, restrictTo } = require("../middlewares/auth");
+const upload = require("../middlewares/upload");
+const validate = require("../../../shared/middlewares/validate");
 const {
   validateCreateProperty,
   validateCreateRoomType,
   validateCreateRoom,
   validateAvailabilitySearch,
   validateUpdateRoomStatus,
-} = require('../validators/propertyValidators');
+} = require("../validators/propertyValidators");
 
 // ── Public routes ─────────────────────────────────────────────────────────────
-router.get('/search/available',
+router.get(
+  "/search/available",
   validateAvailabilitySearch,
   validate,
-  ctrl.searchAvailable
+  ctrl.searchAvailable,
 );
 
-router.get('/',      ctrl.getProperties);
-router.get('/:slug', ctrl.getPropertyBySlug);
+router.get("/", ctrl.getProperties);
+
+router.get(
+  "/id/:id",
+  protect,
+  restrictTo("super_admin", "hotel_manager"),
+  ctrl.getPropertyById,
+);
+
+router.get("/:slug", ctrl.getPropertyBySlug);
 
 // ── Manager only ──────────────────────────────────────────────────────────────
-router.post('/',
+router.post(
+  "/",
   protect,
-  restrictTo('super_admin', 'hotel_manager'),
+  restrictTo("super_admin", "hotel_manager"),
   validateCreateProperty,
   validate,
-  ctrl.createProperty
+  ctrl.createProperty,
 );
 
-router.put('/:id',
+router.put(
+  "/:id",
   protect,
-  restrictTo('super_admin', 'hotel_manager'),
-  ctrl.updateProperty
+  restrictTo("super_admin", "hotel_manager"),
+  ctrl.updateProperty,
 );
 
-router.delete('/:id',
+router.delete(
+  "/:id",
   protect,
-  restrictTo('super_admin'),
-  ctrl.deactivateProperty
+  restrictTo("super_admin"),
+  ctrl.deactivateProperty,
 );
 
 // ── Images ────────────────────────────────────────────────────────────────────
-router.post('/:id/images',
+router.post(
+  "/:id/images",
   protect,
-  restrictTo('super_admin', 'hotel_manager'),
-  upload.single('image'),
-  ctrl.uploadImage
+  restrictTo("super_admin", "hotel_manager"),
+  upload.single("image"),
+  ctrl.uploadImage,
 );
 
-router.delete('/:id/images/:publicId',
+router.delete(
+  "/:id/images/:publicId",
   protect,
-  restrictTo('super_admin', 'hotel_manager'),
-  ctrl.deleteImage
+  restrictTo("super_admin", "hotel_manager"),
+  ctrl.deleteImage,
 );
 
 // ── Room Types ────────────────────────────────────────────────────────────────
-router.get('/:id/room-types', ctrl.getRoomTypes);
+router.get("/:id/room-types", ctrl.getRoomTypes);
 
-router.post('/:id/room-types',
+router.post(
+  "/:id/room-types",
   protect,
-  restrictTo('super_admin', 'hotel_manager'),
+  restrictTo("super_admin", "hotel_manager"),
   validateCreateRoomType,
   validate,
-  ctrl.createRoomType
+  ctrl.createRoomType,
 );
 
-router.put('/:id/room-types/:roomTypeId',
+router.put(
+  "/:id/room-types/:roomTypeId",
   protect,
-  restrictTo('super_admin', 'hotel_manager'),
-  ctrl.updateRoomType
+  restrictTo("super_admin", "hotel_manager"),
+  ctrl.updateRoomType,
 );
 
-router.delete('/:id/room-types/:roomTypeId',
+router.delete(
+  "/:id/room-types/:roomTypeId",
   protect,
-  restrictTo('super_admin', 'hotel_manager'),
-  ctrl.deleteRoomType
+  restrictTo("super_admin", "hotel_manager"),
+  ctrl.deleteRoomType,
 );
 
 // ── Rooms ─────────────────────────────────────────────────────────────────────
-router.get('/:id/rooms',
+router.get(
+  "/:id/rooms",
   protect,
-  restrictTo('super_admin', 'hotel_manager', 'receptionist'),
-  ctrl.getRooms
+  restrictTo("super_admin", "hotel_manager", "receptionist"),
+  ctrl.getRooms,
 );
 
-router.post('/:id/rooms',
+router.post(
+  "/:id/rooms",
   protect,
-  restrictTo('super_admin', 'hotel_manager'),
+  restrictTo("super_admin", "hotel_manager"),
   validateCreateRoom,
   validate,
-  ctrl.createRoom
+  ctrl.createRoom,
 );
 
-router.put('/:id/rooms/:roomId',
+router.put(
+  "/:id/rooms/:roomId",
   protect,
-  restrictTo('super_admin', 'hotel_manager', 'housekeeping', 'receptionist'),
+  restrictTo("super_admin", "hotel_manager", "housekeeping", "receptionist"),
   validateUpdateRoomStatus,
   validate,
-  ctrl.updateRoomStatus
+  ctrl.updateRoomStatus,
 );
 
 module.exports = router;

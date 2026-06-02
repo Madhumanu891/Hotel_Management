@@ -168,7 +168,7 @@ export default function MetricsDashboard() {
             </div>
 
             {/* Service request counts */}
-            <div className="card p-6">
+            <div className="card p-6 dark:bg-slate-800">
               <h2 className="font-semibold text-gray-900 dark:text-white mb-5">
                 Requests by Service
               </h2>

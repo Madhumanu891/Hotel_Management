@@ -336,7 +336,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+      <div className="flex gap-1 bg-gray-100 dark:bg-slate-700 rounded-xl p-1">
         {tabs.map(tab => (
           <button
             key={tab.key}
@@ -399,7 +399,7 @@ export default function ProfilePage() {
           <div className="card p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Account Details</h2>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b dark:border-slate-700">
                 <span className="text-gray-500">Member since</span>
                 <span className="font-medium text-gray-900">
                   {profile?.createdAt
@@ -409,7 +409,7 @@ export default function ProfilePage() {
                     : 'Unknown'}
                 </span>
               </div>
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b dark:border-slate-700">
                 <span className="text-gray-500">Account status</span>
                 <span className={`font-medium ${profile?.isActive ? 'text-green-600' : 'text-red-600'}`}>
                   {profile?.isActive ? 'Active' : 'Deactivated'}

@@ -339,7 +339,7 @@ export default function SearchPage() {
       {!searchParams && !isLoading && (
         <div className="card p-12 text-center">
           <Search className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-          <h3 className="font-semibold text-gray-900 mb-2">Search for hotels</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Search for hotels</h3>
           <p className="text-gray-500">Enter a city and dates to find available rooms</p>
         </div>
       )}

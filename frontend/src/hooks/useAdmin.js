@@ -74,3 +74,13 @@ export const useDeactivateProperty = () =>
     mutationFn: (id) => api.delete(`/api/properties/${id}`).then(r => r.data),
     onSuccess:  () => queryClient.invalidateQueries({ queryKey: ['admin', 'properties'] }),
   });
+
+
+  export const usePropertyById = (id) =>
+  useQuery({
+    queryKey: ['admin', 'property', id],
+    queryFn: () =>
+      api.get(`/api/properties/id/${id}`).then(r => r.data.data),
+
+    enabled: !!id, // only fetch when id exists
+  });
