@@ -55,7 +55,7 @@ const TaskChecklist = ({ task, onUpdate, isUpdating }) => {
         <span className="text-gray-500">{completed}/{total} items complete</span>
         <span className="font-medium text-gray-700">{Math.round(progress)}%</span>
       </div>
-      <div className="w-full bg-gray-100 rounded-full h-2">
+      <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2">
         <div
           className="bg-primary-600 h-2 rounded-full transition-all"
           style={{ width: `${progress}%` }}
@@ -63,11 +63,10 @@ const TaskChecklist = ({ task, onUpdate, isUpdating }) => {
       </div>
       <div className="space-y-2 mt-3">
         {task.checklist?.map((item, idx) => (
-          <label
-            key={idx}
-            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${item.done ? 'bg-green-50' : 'bg-gray-50 hover:bg-gray-100'
-              }`}
-          >
+          <label className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${item.done
+            ? 'bg-green-50 dark:bg-green-900/20'
+            : 'bg-gray-50 dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600'
+            }`}>
             <input
               type="checkbox"
               checked={item.done}
@@ -99,7 +98,8 @@ const TaskCard = ({ task, onStart, onComplete, onVerify, onChecklistUpdate,
   const allDone = task.checklist?.every(c => c.done);
 
   return (
-    <div className={`card overflow-hidden transition-shadow hover:shadow-md ${task.priority === 'urgent' ? 'border-l-4 border-l-red-500' :
+    // TaskCard — update the card container:
+    <div className={`card dark:bg-slate-800 overflow-hidden transition-shadow hover:shadow-md ${task.priority === 'urgent' ? 'border-l-4 border-l-red-500' :
       task.priority === 'high' ? 'border-l-4 border-l-orange-400' : ''
       }`}>
       {/* Header */}
@@ -288,7 +288,7 @@ export default function HousekeepingDashboard() {
             { label: 'Completed', value: stats.today?.completed, color: 'bg-green-50 text-green-700', icon: CheckCircle },
             { label: 'Verified', value: stats.today?.verified, color: 'bg-purple-50 text-purple-700', icon: Shield },
           ].map(({ label, value, color, icon: Icon }) => (
-            <div key={label} className="card p-5">
+            <div key={label} className="card dark:bg-slate-800 p-5">
               <div className={`h-9 w-9 rounded-xl flex items-center justify-center mb-3 ${color}`}>
                 <Icon className="h-5 w-5" />
               </div>
@@ -302,14 +302,10 @@ export default function HousekeepingDashboard() {
       {/* Filter tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {filterTabs.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === tab.key
-              ? 'bg-primary-700 text-white'
-              : 'bg-white text-gray-600 border hover:bg-gray-50'
-              }`}
-          >
+          <button className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === tab.key
+            ? 'bg-primary-700 text-white'
+            : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 border dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700'
+            }`}>
             {tab.label}
           </button>
         ))}
@@ -319,10 +315,10 @@ export default function HousekeepingDashboard() {
       {isLoading ? (
         <div className="flex justify-center py-12"><Spinner size="lg" /></div>
       ) : tasks.length === 0 ? (
-        <div className="card p-12 text-center">
-          <ClipboardList className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-          <h3 className="font-semibold text-gray-900 mb-2">No tasks found</h3>
-          <p className="text-gray-500">
+        <div className="card dark:bg-slate-800 p-12 text-center">
+          <ClipboardList className="h-12 w-12 text-gray-200 dark:text-slate-600 mx-auto mb-4" />
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">No tasks found</h3>
+          <p className="text-gray-500 dark:text-slate-400">
             {filter === 'all' ? 'No housekeeping tasks assigned yet' : `No ${filter} tasks`}
           </p>
         </div>
