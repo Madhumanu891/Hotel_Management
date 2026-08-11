@@ -10,6 +10,9 @@ import MobileNav             from '../components/ui/MobileNav';
 import NotificationsPanel    from '../components/ui/NotificationsPanel';
 import ThemeToggle           from '../components/ui/ThemeToggle';
 import LanguageSelector      from '../components/ui/LanguageSelector';
+import RouteScrollReset from '../components/ui/RouteScrollReset';
+import ScrollToTop from '../components/ui/ScrollToTop';
+
 
 const navItems = [
   { to: '/dashboard/guest',          label: 'Home',     icon: Home     },
@@ -34,6 +37,7 @@ export default function GuestLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
+      <RouteScrollReset />
       {/* Top Navigation */}
       <nav className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -154,6 +158,7 @@ export default function GuestLayout() {
 
       {/* Mobile bottom nav */}
       <MobileNav role={user?.role} />
+      <ScrollToTop />
     </div>
   );
 }

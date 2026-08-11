@@ -11,7 +11,7 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: (credentials) =>
-      api.post('/api/auth/login', credentials).then(r => r.data),
+      api.post('/auth/login', credentials).then(r => r.data),
 
     onSuccess: (data) => {
       setAuth(data.data.user, data.data.accessToken);
@@ -41,7 +41,7 @@ export const useRegister = () => {
 
   return useMutation({
     mutationFn: (data) =>
-      api.post('/api/auth/register', data).then(r => r.data),
+      api.post('/auth/register', data).then(r => r.data),
 
     onSuccess: (data) => {
       setAuth(data.data.user, data.data.accessToken);
@@ -60,7 +60,7 @@ export const useLogout = () => {
   const navigate   = useNavigate();
 
   return useMutation({
-    mutationFn: () => api.post('/api/auth/logout').then(r => r.data),
+    mutationFn: () => api.post('/auth/logout').then(r => r.data),
     onSettled: () => {
       logout();
       queryClient.clear();
@@ -74,7 +74,7 @@ export const useMe = () => {
   const { token } = useAuthStore();
   return useQuery({
     queryKey:  ['me'],
-    queryFn:   () => api.get('/api/auth/me').then(r => r.data.data.user),
+    queryFn:   () => api.get('/auth/me').then(r => r.data.data.user),
     enabled:   !!token,
     staleTime: 10 * 60 * 1000,
   });
@@ -83,7 +83,7 @@ export const useMe = () => {
 export const useForgotPassword = () =>
   useMutation({
     mutationFn: (email) =>
-      api.post('/api/auth/forgot-password', { email }).then(r => r.data),
+      api.post('/auth/forgot-password', { email }).then(r => r.data),
     onSuccess: () => toast.success('Reset link sent! Check your inbox.'),
     onError:   () => toast.error('Something went wrong. Please try again.'),
   });
@@ -92,7 +92,7 @@ export const useResetPassword = () => {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: ({ token, password }) =>
-      api.patch(`/api/auth/reset-password/${token}`, { password }).then(r => r.data),
+      api.patch(`/auth/reset-password/${token}`, { password }).then(r => r.data),
     onSuccess: () => {
       toast.success('Password updated successfully!');
       navigate('/login');

@@ -1,26 +1,33 @@
-import { useState, useEffect } from 'react';
-import { WifiOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChevronUp } from 'lucide-react';
 
-export default function NetworkStatus() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+export default function ScrollToTop() {
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const onOnline  = () => setIsOnline(true);
-    const onOffline = () => setIsOnline(false);
-    window.addEventListener('online',  onOnline);
-    window.addEventListener('offline', onOffline);
-    return () => {
-      window.removeEventListener('online',  onOnline);
-      window.removeEventListener('offline', onOffline);
-    };
+    const onScroll = () => setVisible(window.scrollY > 400);
+
+    window.addEventListener('scroll', onScroll, {
+      passive: true,
+    });
+
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  if (isOnline) return null;
+  if (!visible) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-red-600 text-white text-center py-2 text-sm font-medium flex items-center justify-center gap-2">
-      <WifiOff className="h-4 w-4" />
-      No internet connection — Some features may not work
-    </div>
+    <button
+      onClick={() =>
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        })
+      }
+      className="fixed bottom-20 md:bottom-6 right-4 z-30 h-10 w-10 rounded-full bg-primary-700 text-white shadow-lg flex items-center justify-center hover:bg-primary-800 transition-colors"
+      aria-label="Scroll to top"
+    >
+      <ChevronUp className="h-5 w-5" />
+    </button>
   );
 }

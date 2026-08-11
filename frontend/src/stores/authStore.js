@@ -3,20 +3,27 @@ import { persist } from 'zustand/middleware';
 
 export const useAuthStore = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       user:  null,
       token: null,
 
       setAuth: (user, token) => set({ user, token }),
-      setToken: (token)      => set({ token }),
-      logout:  ()            => set({ user: null, token: null }),
 
-      isAuthenticated: () => !!get().token,
-      hasRole: (roles) => roles.includes(get().user?.role),
+      setToken: (token) => set({ token }),
+
+      logout: () => set({ user: null, token: null }),
+
+      updateUser: (updates) =>
+        set(state => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        })),
     }),
     {
-      name:    'hotel-auth',
-      partialize: (state) => ({ user: state.user, token: state.token }),
+      name:    'nexora-auth',
+      partialize: (state) => ({
+        user:  state.user,
+        token: state.token,
+      }),
     }
   )
 );

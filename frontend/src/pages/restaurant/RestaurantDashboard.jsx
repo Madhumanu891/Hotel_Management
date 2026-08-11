@@ -11,42 +11,41 @@ import {
 } from '../../hooks/useRestaurant';
 import { useAuthStore } from '../../stores/authStore';
 import Spinner from '../../components/ui/Spinner';
-import Button  from '../../components/ui/Button';
+import Button from '../../components/ui/Button';
 
 // ── Order status config ─────────────────────────────────────────────────────
 const orderStatusConfig = {
-  placed:    { label: 'New Order',  color: 'border-red-400 bg-red-50',    badge: 'badge-error',   next: 'confirmed'  },
-  confirmed: { label: 'Confirmed',  color: 'border-blue-400 bg-blue-50',  badge: 'badge-info',    next: 'preparing'  },
-  preparing: { label: 'Preparing',  color: 'border-yellow-400 bg-yellow-50', badge: 'badge-warning', next: 'ready'   },
-  ready:     { label: 'Ready',      color: 'border-green-400 bg-green-50',badge: 'badge-success', next: 'delivered'  },
-  delivered: { label: 'Delivered',  color: 'border-gray-300 bg-gray-50',  badge: 'badge-purple',  next: null         },
-  cancelled: { label: 'Cancelled',  color: 'border-gray-300 bg-gray-50',  badge: 'badge-error',   next: null         },
+  placed: { label: 'New Order', color: 'border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-700', badge: 'badge-error', next: 'confirmed' },
+  confirmed: { label: 'Confirmed', color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700', badge: 'badge-info', next: 'preparing' },
+  preparing: { label: 'Preparing', color: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-700', badge: 'badge-warning', next: 'ready' },
+  ready: { label: 'Ready', color: 'border-green-400 bg-green-50 dark:bg-green-900/20 dark:border-green-700', badge: 'badge-success', next: 'delivered' },
+  delivered: { label: 'Delivered', color: 'border-gray-300 bg-gray-50 dark:bg-slate-700 dark:border-slate-600', badge: 'badge-purple', next: null },
+  cancelled: { label: 'Cancelled', color: 'border-gray-300 bg-gray-50 dark:bg-slate-700 dark:border-slate-600', badge: 'badge-error', next: null },
 };
 
 const nextStatus = {
-  placed:    'confirmed',
+  placed: 'confirmed',
   confirmed: 'preparing',
   preparing: 'ready',
-  ready:     'delivered',
+  ready: 'delivered',
 };
 
 const nextLabel = {
-  placed:    'Confirm',
+  placed: 'Confirm',
   confirmed: 'Start Preparing',
   preparing: 'Mark Ready',
-  ready:     'Mark Delivered',
+  ready: 'Mark Delivered',
 };
 
 // ── Live Order Card ─────────────────────────────────────────────────────────
 const LiveOrderCard = ({ order, onUpdate, isUpdating }) => {
-  const config  = orderStatusConfig[order.status] || orderStatusConfig.placed;
+  const config = orderStatusConfig[order.status] || orderStatusConfig.placed;
   const elapsed = Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000);
   const isUrgent = elapsed > 20 && order.status !== 'delivered';
 
   return (
-    <div className={`rounded-2xl border-2 p-5 transition-all ${config.color} ${
-      isUrgent ? 'animate-pulse' : ''
-    }`}>
+    <div className={`rounded-2xl border-2 p-5 transition-all ${config.color} ${isUrgent ? 'animate-pulse' : ''
+      }`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -61,9 +60,8 @@ const LiveOrderCard = ({ order, onUpdate, isUpdating }) => {
             )}
           </div>
         </div>
-        <div className={`flex items-center gap-1 text-sm font-bold ${
-          elapsed > 20 ? 'text-red-600' : elapsed > 10 ? 'text-yellow-600' : 'text-gray-500'
-        }`}>
+        <div className={`flex items-center gap-1 text-sm font-bold ${elapsed > 20 ? 'text-red-600' : elapsed > 10 ? 'text-yellow-600' : 'text-gray-500'
+          }`}>
           <Clock className="h-4 w-4" />
           {elapsed}m
         </div>
@@ -136,10 +134,10 @@ const AddMenuItemModal = ({ propertyId, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 overflow-y-auto max-h-[90vh]">
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-gray-900">Add Menu Item</h2>
-          <button onClick={onClose}><X className="h-5 w-5 text-gray-400" /></button>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Add Menu Item</h2>
+          <button onClick={onClose}><X className="h-5 w-5 text-gray-400 dark:text-slate-400" /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -161,7 +159,7 @@ const AddMenuItemModal = ({ propertyId, onClose }) => {
                 value={form.category}
                 onChange={e => setForm({ ...form, category: e.target.value })}
               >
-                {['breakfast','lunch','dinner','beverages','desserts','snacks','specials'].map(c => (
+                {['breakfast', 'lunch', 'dinner', 'beverages', 'desserts', 'snacks', 'specials'].map(c => (
                   <option key={c} value={c} className="capitalize">{c}</option>
                 ))}
               </select>
@@ -226,11 +224,11 @@ const MenuItemCard = ({ item, propertyId }) => {
   const toggleMutation = useToggleItemAvailability();
 
   return (
-    <div className={`card p-4 transition-opacity ${!item.isAvailable ? 'opacity-60' : ''}`}>
+    <div className={`card dark:bg-slate-800 p-4 transition-opacity ${!item.isAvailable ? 'opacity-60' : ''}`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-gray-900 text-sm">{item.name}</span>
+            <span className="font-medium text-gray-900 dark:text-white text-sm">{item.name}</span>
             {item.isVegetarian && (
               <span className="h-4 w-4 rounded-full border-2 border-green-500 flex items-center justify-center">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
@@ -238,10 +236,10 @@ const MenuItemCard = ({ item, propertyId }) => {
             )}
           </div>
           {item.description && (
-            <p className="text-xs text-gray-500 mb-2 line-clamp-1">{item.description}</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 line-clamp-1">{item.description}</p>
           )}
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            <span className="font-bold text-gray-900">₹{item.price}</span>
+          <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-slate-400">
+            <span className="font-bold text-gray-900 dark:text-white">₹{item.price}</span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {item.preparationTime}m
@@ -251,13 +249,11 @@ const MenuItemCard = ({ item, propertyId }) => {
         <button
           onClick={() => toggleMutation.mutate({ propertyId, itemId: item._id })}
           disabled={toggleMutation.isPending}
-          className={`ml-3 relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            item.isAvailable ? 'bg-primary-600' : 'bg-gray-200'
-          }`}
+          className={`ml-3 relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${item.isAvailable ? 'bg-primary-600' : 'bg-gray-200'
+            }`}
         >
-          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-            item.isAvailable ? 'translate-x-6' : 'translate-x-1'
-          }`} />
+          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${item.isAvailable ? 'translate-x-6' : 'translate-x-1'
+            }`} />
         </button>
       </div>
     </div>
@@ -266,15 +262,15 @@ const MenuItemCard = ({ item, propertyId }) => {
 
 // ── Main Dashboard ──────────────────────────────────────────────────────────
 export default function RestaurantDashboard() {
-  const { user }     = useAuthStore();
-  const propertyId   = user?.propertyId || '69d6817ab880abc410462b20';
-  const [activeTab,  setActiveTab]  = useState('kitchen');
+  const { user } = useAuthStore();
+  const propertyId = user?.propertyId || '69d6817ab880abc410462b20';
+  const [activeTab, setActiveTab] = useState('kitchen');
   const [showAddItem, setShowAddItem] = useState(false);
-  const [menuSearch,  setMenuSearch]  = useState('');
+  const [menuSearch, setMenuSearch] = useState('');
   const [menuCategory, setMenuCategory] = useState('all');
 
   const { data: liveOrders, isLoading: ordersLoading, refetch } = useLiveOrders(propertyId);
-  const { data: menuData,   isLoading: menuLoading }             = useMenu(propertyId);
+  const { data: menuData, isLoading: menuLoading } = useMenu(propertyId);
   const updateStatusMutation = useUpdateOrderStatus();
 
   const handleUpdateStatus = ({ orderId, status }) => {
@@ -291,7 +287,7 @@ export default function RestaurantDashboard() {
   // Filter menu
   const allItems = Object.values(menuData?.menu || {}).flat();
   const filteredItems = allItems.filter(item => {
-    const matchesSearch   = item.name.toLowerCase().includes(menuSearch.toLowerCase());
+    const matchesSearch = item.name.toLowerCase().includes(menuSearch.toLowerCase());
     const matchesCategory = menuCategory === 'all' || item.category === menuCategory;
     return matchesSearch && matchesCategory;
   });
@@ -300,7 +296,7 @@ export default function RestaurantDashboard() {
 
   const tabs = [
     { key: 'kitchen', label: `Kitchen (${liveOrders?.length || 0})`, icon: ChefHat },
-    { key: 'menu',    label: `Menu (${allItems.length})`,            icon: UtensilsCrossed },
+    { key: 'menu', label: `Menu (${allItems.length})`, icon: UtensilsCrossed },
   ];
 
   return (
@@ -330,37 +326,35 @@ export default function RestaurantDashboard() {
       {/* Quick stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'New Orders',    value: groupedOrders.placed?.length    || 0, color: 'bg-red-50 text-red-700',    icon: AlertCircle },
-          { label: 'Confirmed',     value: groupedOrders.confirmed?.length || 0, color: 'bg-blue-50 text-blue-700',  icon: Circle      },
-          { label: 'Preparing',     value: groupedOrders.preparing?.length || 0, color: 'bg-yellow-50 text-yellow-700', icon: ChefHat   },
-          { label: 'Ready',         value: groupedOrders.ready?.length     || 0, color: 'bg-green-50 text-green-700', icon: CheckCircle },
+          { label: 'New Orders', value: groupedOrders.placed?.length || 0, color: 'bg-red-50 text-red-700', icon: AlertCircle },
+          { label: 'Confirmed', value: groupedOrders.confirmed?.length || 0, color: 'bg-blue-50 text-blue-700', icon: Circle },
+          { label: 'Preparing', value: groupedOrders.preparing?.length || 0, color: 'bg-yellow-50 text-yellow-700', icon: ChefHat },
+          { label: 'Ready', value: groupedOrders.ready?.length || 0, color: 'bg-green-50 text-green-700', icon: CheckCircle },
         ].map(({ label, value, color, icon: Icon }) => (
-          <div key={label} className="card p-4">
+          <div key={label} className="card dark:bg-slate-800 p-4">
             <div className={`h-9 w-9 rounded-xl flex items-center justify-center mb-3 ${color}`}>
               <Icon className="h-5 w-5" />
             </div>
             <div className="text-2xl font-bold text-gray-900">{value}</div>
-            <div className="text-sm text-gray-500">{label}</div>
+            <div className="text-sm text-gray-500 dark:text-slate-400">{label}</div>
           </div>
         ))}
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
-        {tabs.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+      <div className="flex gap-1 bg-gray-100 dark:bg-slate-800 rounded-xl p-1 w-fit">        {tabs.map(tab => (
+        <button
+          key={tab.key}
+          onClick={() => setActiveTab(tab.key)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key
+            ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
+            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
             }`}
-          >
-            <tab.icon className="h-4 w-4" />
-            {tab.label}
-          </button>
-        ))}
+        >
+          <tab.icon className="h-4 w-4" />
+          {tab.label}
+        </button>
+      ))}
       </div>
 
       {/* Kitchen Display */}
@@ -368,10 +362,10 @@ export default function RestaurantDashboard() {
         ordersLoading ? (
           <div className="flex justify-center py-12"><Spinner size="lg" /></div>
         ) : (liveOrders || []).length === 0 ? (
-          <div className="card p-12 text-center">
-            <ChefHat className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-            <h3 className="font-semibold text-gray-900 mb-2">No active orders</h3>
-            <p className="text-gray-500">New orders will appear here automatically</p>
+          <div className="card dark:bg-slate-800 p-12 text-center">
+            <ChefHat className="h-12 w-12 text-gray-200 dark:text-slate-600 mx-auto mb-4" />
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">No active orders</h3>
+            <p className="text-gray-500 dark:text-slate-400">New orders appear here automatically</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -407,11 +401,10 @@ export default function RestaurantDashboard() {
                 <button
                   key={cat}
                   onClick={() => setMenuCategory(cat)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap capitalize transition-colors ${
-                    menuCategory === cat
-                      ? 'bg-primary-700 text-white'
-                      : 'bg-white text-gray-600 border hover:bg-gray-50'
-                  }`}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap capitalize transition-colors ${menuCategory === cat
+                    ? 'bg-primary-700 text-white'
+                    : 'bg-white text-gray-600 border hover:bg-gray-50'
+                    }`}
                 >
                   {cat}
                 </button>
@@ -422,7 +415,7 @@ export default function RestaurantDashboard() {
           {menuLoading ? (
             <div className="flex justify-center py-8"><Spinner /></div>
           ) : filteredItems.length === 0 ? (
-            <div className="card p-8 text-center text-gray-500">
+            <div className="card dark:bg-slate-800 p-8 text-center text-gray-500 dark:text-slate-400">
               <Utensils className="h-8 w-8 mx-auto mb-2 opacity-40" />
               <p>No menu items found</p>
             </div>

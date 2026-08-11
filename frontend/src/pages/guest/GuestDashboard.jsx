@@ -2,26 +2,28 @@ import { useAuthStore } from '../../stores/authStore';
 import { Star, Calendar, MapPin, Search, TrendingUp, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMyBookings } from '../../hooks/useBookings';
+import Button from '../../components/ui/Button';
+
 
 const tierConfig = {
-  bronze:   { gradient: 'from-orange-400 to-orange-600',   label: 'Bronze',   next: 'Silver',   max: 500  },
-  silver:   { gradient: 'from-gray-400 to-gray-600',       label: 'Silver',   next: 'Gold',     max: 1000 },
-  gold:     { gradient: 'from-yellow-400 to-yellow-600',   label: 'Gold',     next: 'Platinum', max: 2000 },
-  platinum: { gradient: 'from-purple-500 to-purple-800',   label: 'Platinum', next: null,       max: 2000 },
+  bronze: { gradient: 'from-orange-400 to-orange-600', label: 'Bronze', next: 'Silver', max: 500 },
+  silver: { gradient: 'from-gray-400 to-gray-600', label: 'Silver', next: 'Gold', max: 1000 },
+  gold: { gradient: 'from-yellow-400 to-yellow-600', label: 'Gold', next: 'Platinum', max: 2000 },
+  platinum: { gradient: 'from-purple-500 to-purple-800', label: 'Platinum', next: null, max: 2000 },
 };
 
 export default function GuestDashboard() {
   const { user } = useAuthStore();
-  const tier     = user?.guestProfile?.loyaltyTier   || 'bronze';
-  const points   = user?.guestProfile?.loyaltyPoints || 0;
-  const stays    = user?.guestProfile?.totalStays    || 0;
-  const config   = tierConfig[tier] || tierConfig.bronze;
+  const tier = user?.guestProfile?.loyaltyTier || 'bronze';
+  const points = user?.guestProfile?.loyaltyPoints || 0;
+  const stays = user?.guestProfile?.totalStays || 0;
+  const config = tierConfig[tier] || tierConfig.bronze;
   const progress = Math.min((points / config.max) * 100, 100);
 
   const { data: bookingsData } = useMyBookings({ limit: 3 });
   const recentBookings = bookingsData?.bookings || [];
 
-  const upcoming  = recentBookings.filter(b => ['confirmed', 'checked_in'].includes(b.status)).length;
+  const upcoming = recentBookings.filter(b => ['confirmed', 'checked_in'].includes(b.status)).length;
   const completed = recentBookings.filter(b => b.status === 'checked_out').length;
 
   return (
@@ -52,10 +54,10 @@ export default function GuestDashboard() {
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Stays',    value: stays,     icon: MapPin,     color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'    },
-          { label: 'Upcoming',       value: upcoming,  icon: Clock,      color: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' },
-          { label: 'Completed',      value: completed, icon: TrendingUp, color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' },
-          { label: 'Loyalty Points', value: points,    icon: Star,       color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400' },
+          { label: 'Total Stays', value: stays, icon: MapPin, color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' },
+          { label: 'Upcoming', value: upcoming, icon: Clock, color: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' },
+          { label: 'Completed', value: completed, icon: TrendingUp, color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' },
+          { label: 'Loyalty Points', value: points, icon: Star, color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400' },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="card dark:bg-slate-800 p-4">
             <div className={`h-8 w-8 rounded-xl flex items-center justify-center mb-3 ${color}`}>
@@ -123,52 +125,58 @@ export default function GuestDashboard() {
           )}
         </div>
 
-        {/* Quick actions */}
-        <div className="md:col-span-2 card dark:bg-slate-800 p-6">
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-4">
-            Quick Actions
+        {/* Quick search widget */}
+        <div className="card dark:bg-slate-800 p-6">
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Search className="h-5 w-5 text-primary-600" />
+            Quick Search
           </h2>
-          <div className="space-y-3">
-            {[
-              {
-                to:    '/dashboard/guest/search',
-                label: 'Search Hotels',
-                desc:  'Find your next stay',
-                icon:  Search,
-                color: 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400',
-              },
-              {
-                to:    '/dashboard/guest/bookings',
-                label: 'My Bookings',
-                desc:  'View reservations',
-                icon:  Calendar,
-                color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400',
-              },
-              {
-                to:    '/dashboard/guest/loyalty',
-                label: 'Loyalty Rewards',
-                desc:  'Earn & redeem points',
-                icon:  Star,
-                color: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400',
-              },
-            ].map(({ to, label, desc, icon: Icon, color }) => (
-              <Link
-                key={to}
-                to={to}
-                className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors group"
-              >
-                <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="font-medium text-gray-900 dark:text-white text-sm group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
-                    {label}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-slate-400">{desc}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const data = Object.fromEntries(new FormData(e.target));
+              sessionStorage.setItem('searchParams', JSON.stringify(data));
+              navigate('/dashboard/guest/search');
+            }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
+          >
+            <div>
+              <label className="label text-xs">City</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <input
+                  name="city"
+                  type="text"
+                  className="input pl-8 text-sm py-2"
+                  placeholder="Hyderabad..."
+                />
+              </div>
+            </div>
+            <div>
+              <label className="label text-xs">Check-in</label>
+              <input
+                name="checkIn"
+                type="date"
+                min={new Date().toISOString().split('T')[0]}
+                className="input text-sm py-2"
+              />
+            </div>
+            <div>
+              <label className="label text-xs">Check-out</label>
+              <input
+                name="checkOut"
+                type="date"
+                min={new Date().toISOString().split('T')[0]}
+                className="input text-sm py-2"
+              />
+            </div>
+            <div className="flex items-end">
+              <Button type="submit" fullWidth className="py-2">
+                <search className="h-4 w-4" />
+                Search
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
 
@@ -205,11 +213,11 @@ export default function GuestDashboard() {
           <div className="space-y-3">
             {recentBookings.map(booking => {
               const statusColors = {
-                pending:     'badge-warning',
-                confirmed:   'badge-success',
-                checked_in:  'badge-info',
+                pending: 'badge-warning',
+                confirmed: 'badge-success',
+                checked_in: 'badge-info',
                 checked_out: 'badge-purple',
-                cancelled:   'badge-error',
+                cancelled: 'badge-error',
               };
               return (
                 <Link

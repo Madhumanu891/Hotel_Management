@@ -1,29 +1,32 @@
-import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Hotel, ArrowLeft, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Hotel, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useForgotPassword } from '../../hooks/useAuth';
 import Button from '../../components/ui/Button';
-import Alert  from '../../components/ui/Alert';
 
 export default function ForgotPasswordPage() {
-  const { register, handleSubmit, formState: { errors } } = useForm();
   const forgotMutation = useForgotPassword();
 
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const onSubmit = (data) => forgotMutation.mutate(data.email);
 
   if (forgotMutation.isSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="card p-8 w-full max-w-md text-center">
-          <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-            <Mail className="h-8 w-8 text-green-600" />
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4">
+        <div className="card dark:bg-slate-800 p-8 max-w-md w-full text-center">
+          <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Check your email</h2>
-          <p className="text-gray-500 mb-6">
-            If an account exists for that email, we have sent a password reset link. Check your inbox.
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Check your inbox
+          </h2>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">
+            We have sent a password reset link to your email address.
+            Check your spam folder if you don't see it.
           </p>
           <Link to="/login" className="btn-primary inline-flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" /> Back to login
+            <ArrowLeft className="h-4 w-4" />
+            Back to Sign In
           </Link>
         </div>
       </div>
@@ -31,44 +34,64 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="card p-8 w-full max-w-md">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-xl bg-primary-700 flex items-center justify-center">
-            <Hotel className="h-6 w-6 text-white" />
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="h-14 w-14 rounded-2xl bg-primary-700 flex items-center justify-center mx-auto mb-4">
+            <Hotel className="h-7 w-7 text-white" />
           </div>
-          <span className="font-bold text-xl">NexoraHotels</span>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Forgot your password?
+          </h1>
+          <p className="text-gray-500 dark:text-slate-400 mt-1">
+            Enter your email and we'll send a reset link
+          </p>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Reset password</h2>
-        <p className="text-gray-500 mb-8">Enter your email and we will send you a reset link</p>
+        <div className="card dark:bg-slate-800 p-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <label className="label">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="email"
+                  className={`input pl-9 ${errors.email ? 'input-error' : ''}`}
+                  placeholder="you@example.com"
+                  {...register('email', {
+                    required: 'Email is required',
+                    pattern:  { value: /\S+@\S+\.\S+/, message: 'Invalid email' },
+                  })}
+                />
+              </div>
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
 
-        {forgotMutation.isError && (
-          <div className="mb-6">
-            <Alert type="error" message="Something went wrong. Please try again." />
-          </div>
-        )}
+            <Button
+              type="submit"
+              loading={forgotMutation.isPending}
+              fullWidth
+              className="py-3"
+            >
+              Send Reset Link
+            </Button>
+          </form>
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div>
-            <label className="label">Email address</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              className={`input ${errors.email ? 'input-error' : ''}`}
-              {...register('email', { required: 'Email is required' })}
-            />
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
-          </div>
-
-          <Button type="submit" loading={forgotMutation.isPending} className="w-full py-2.5">
-            Send reset link
-          </Button>
-        </form>
-
-        <Link to="/login" className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700">
-          <ArrowLeft className="h-4 w-4" /> Back to login
-        </Link>
+        <div className="text-center mt-4">
+          <Link
+            to="/login"
+            className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Sign In
+          </Link>
+        </div>
       </div>
     </div>
   );

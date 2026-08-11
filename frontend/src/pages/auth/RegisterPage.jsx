@@ -1,175 +1,157 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Hotel, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Lock, User, Eye, EyeOff, Hotel } from 'lucide-react';
+import { useState } from 'react';
 import { useRegister } from '../../hooks/useAuth';
 import Button from '../../components/ui/Button';
 import Alert  from '../../components/ui/Alert';
 
-const PasswordStrength = ({ password = '' }) => {
-  const checks = [
-    { label: '8+ characters',  ok: password.length >= 8 },
-    { label: 'Uppercase',      ok: /[A-Z]/.test(password) },
-    { label: 'Lowercase',      ok: /[a-z]/.test(password) },
-    { label: 'Number',         ok: /\d/.test(password) },
-  ];
-  const score = checks.filter(c => c.ok).length;
-  const colors = ['bg-red-500', 'bg-red-400', 'bg-yellow-500', 'bg-green-400', 'bg-green-600'];
-
-  return (
-    <div className="mt-2">
-      <div className="flex gap-1 mb-2">
-        {[0,1,2,3].map(i => (
-          <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i < score ? colors[score] : 'bg-gray-200'}`} />
-        ))}
-      </div>
-      <div className="grid grid-cols-2 gap-1">
-        {checks.map(c => (
-          <div key={c.label} className={`flex items-center gap-1 text-xs ${c.ok ? 'text-green-600' : 'text-gray-400'}`}>
-            <CheckCircle className="h-3 w-3" />
-            {c.label}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 export default function RegisterPage() {
-  const [showPass, setShowPass] = useState(false);
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
-  const registerMutation = useRegister();
-  const password = watch('password', '');
+  const [showPw, setShowPw] = useState(false);
+  const registerMutation    = useRegister();
 
-  const onSubmit = (data) => registerMutation.mutate(data);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = (data) => {
+    registerMutation.mutate({
+      name:     data.name,
+      email:    data.email,
+      password: data.password,
+    });
+  };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 flex-col justify-center p-12">
-        <div className="flex items-center gap-3 mb-12">
-          <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
-            <Hotel className="h-6 w-6 text-white" />
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="h-14 w-14 rounded-2xl bg-primary-700 flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Hotel className="h-7 w-7 text-white" />
           </div>
-          <span className="text-white font-bold text-xl">NexoraHotels</span>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Create your account
+          </h1>
+          <p className="text-gray-500 dark:text-slate-400 mt-1">
+            Join NexoraHotels and start exploring
+          </p>
         </div>
-        <h1 className="text-4xl font-bold text-white mb-4">
-          Join NexoraHotels<br />Loyalty Programme
-        </h1>
-        <p className="text-primary-200 text-lg mb-8">
-          Earn points on every stay. Unlock exclusive benefits as you level up from Bronze to Platinum.
-        </p>
-        <div className="space-y-4">
-          {[
-            { tier: 'Bronze',   pts: '0 pts',    perk: 'Free Wi-Fi on every stay' },
-            { tier: 'Silver',   pts: '500 pts',  perk: 'Early check-in priority' },
-            { tier: 'Gold',     pts: '1000 pts', perk: 'Complimentary breakfast' },
-            { tier: 'Platinum', pts: '2000 pts', perk: 'Suite upgrades available' },
-          ].map(t => (
-            <div key={t.tier} className="flex items-center gap-4 bg-white/10 rounded-xl p-4">
-              <div className="text-white font-bold w-20">{t.tier}</div>
-              <div className="text-primary-200 text-sm flex-1">{t.perk}</div>
-              <div className="text-primary-300 text-xs">{t.pts}</div>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 overflow-y-auto">
-        <div className="w-full max-w-md py-8">
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="h-10 w-10 rounded-xl bg-primary-700 flex items-center justify-center">
-              <Hotel className="h-6 w-6 text-white" />
-            </div>
-            <span className="font-bold text-xl">NexoraHotels</span>
-          </div>
-
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Create account</h2>
-          <p className="text-gray-500 mb-8">Join thousands of guests enjoying premium stays</p>
-
+        {/* Card */}
+        <div className="card dark:bg-slate-800 p-6">
           {registerMutation.isError && (
-            <div className="mb-6">
-              <Alert
-                type="error"
-                message={registerMutation.error?.response?.data?.message || 'Registration failed.'}
-              />
-            </div>
+            <Alert
+              type="error"
+              message={registerMutation.error?.response?.data?.message || 'Registration failed'}
+              className="mb-4"
+            />
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Name */}
             <div>
-              <label className="label">Full name</label>
-              <input
-                type="text"
-                placeholder="Madhu Dhanaveni"
-                className={`input ${errors.name ? 'input-error' : ''}`}
-                {...register('name', { required: 'Name is required', minLength: { value: 2, message: 'Min 2 characters' } })}
-              />
-              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+              <label className="label">Full Name</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  className={`input pl-9 ${errors.name ? 'input-error' : ''}`}
+                  placeholder="Madhu Dhanaveni"
+                  {...register('name', {
+                    required:  'Name is required',
+                    minLength: { value: 2, message: 'Min 2 characters' },
+                  })}
+                />
+              </div>
+              {errors.name && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
+            {/* Email */}
             <div>
-              <label className="label">Email address</label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                className={`input ${errors.email ? 'input-error' : ''}`}
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern:  { value: /\S+@\S+\.\S+/, message: 'Invalid email' },
-                })}
-              />
-              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+              <label className="label">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="email"
+                  className={`input pl-9 ${errors.email ? 'input-error' : ''}`}
+                  placeholder="you@example.com"
+                  {...register('email', {
+                    required: 'Email is required',
+                    pattern:  { value: /\S+@\S+\.\S+/, message: 'Invalid email' },
+                  })}
+                />
+              </div>
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
-            <div>
-              <label className="label">Phone (optional)</label>
-              <input
-                type="tel"
-                placeholder="+91 98765 43210"
-                className="input"
-                {...register('phone')}
-              />
-            </div>
-
+            {/* Password */}
             <div>
               <label className="label">Password</label>
               <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
-                  type={showPass ? 'text' : 'password'}
-                  placeholder="Create a strong password"
-                  className={`input pr-10 ${errors.password ? 'input-error' : ''}`}
+                  type={showPw ? 'text' : 'password'}
+                  className={`input pl-9 pr-10 ${errors.password ? 'input-error' : ''}`}
+                  placeholder="Min 8 characters"
                   {...register('password', {
                     required:  'Password is required',
-                    minLength: { value: 8,     message: 'Min 8 characters' },
-                    pattern:   { value: /(?=.*[A-Z])(?=.*\d)/, message: 'Need uppercase and number' },
+                    minLength: { value: 8, message: 'Min 8 characters' },
+                    pattern: {
+                      value:   /(?=.*[A-Z])(?=.*\d)/,
+                      message: 'Need uppercase letter and number',
+                    },
                   })}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  onClick={() => setShowPw(!showPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200"
                 >
-                  {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPw
+                    ? <EyeOff className="h-4 w-4" />
+                    : <Eye    className="h-4 w-4" />
+                  }
                 </button>
               </div>
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
-              {password && <PasswordStrength password={password} />}
+              {errors.password && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <Button
               type="submit"
               loading={registerMutation.isPending}
-              className="w-full py-2.5"
+              fullWidth
+              className="py-3 mt-2"
             >
-              Create account
+              Create Account
             </Button>
           </form>
-
-          <p className="mt-6 text-center text-gray-500 text-sm">
-            Already have an account?{' '}
-            <Link to="/login" className="text-primary-700 font-medium">Sign in</Link>
-          </p>
         </div>
+
+        <p className="text-center text-sm text-gray-500 dark:text-slate-400 mt-4">
+          Already have an account?{' '}
+          <Link
+            to="/login"
+            className="text-primary-700 dark:text-primary-400 font-semibold hover:underline"
+          >
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );

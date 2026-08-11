@@ -18,14 +18,14 @@ import Spinner from '../../components/ui/Spinner';
 const COLORS = ['#6d28d9', '#2563eb', '#059669', '#d97706', '#dc2626'];
 
 const paymentMethodData = [
-  { name: 'PayPal',   value: 45 },
-  { name: 'Card',     value: 30 },
-  { name: 'UPI',      value: 15 },
-  { name: 'Cash',     value: 10 },
+  { name: 'PayPal', value: 45 },
+  { name: 'Card', value: 30 },
+  { name: 'UPI', value: 15 },
+  { name: 'Cash', value: 10 },
 ];
 
 const StatCard = ({ label, value, subValue, icon: Icon, color, trend }) => (
-  <div className="card p-6">
+  <div className={`card dark:bg-slate-800 p-5 ${alert ? 'border-red-300 bg-red-50 dark:bg-red-900/20' : ''}`}>
     <div className="flex items-center justify-between mb-4">
       <span className="text-sm font-medium text-gray-500">{label}</span>
       <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${color}`}>
@@ -38,9 +38,8 @@ const StatCard = ({ label, value, subValue, icon: Icon, color, trend }) => (
         {subValue && <div className="text-xs text-gray-400 mt-0.5">{subValue}</div>}
       </div>
       {trend !== undefined && (
-        <div className={`flex items-center gap-1 text-sm font-medium ${
-          trend >= 0 ? 'text-green-600' : 'text-red-600'
-        }`}>
+        <div className={`flex items-center gap-1 text-sm font-medium ${trend >= 0 ? 'text-green-600' : 'text-red-600'
+          }`}>
           {trend >= 0
             ? <ArrowUpRight className="h-4 w-4" />
             : <ArrowDownRight className="h-4 w-4" />
@@ -53,18 +52,18 @@ const StatCard = ({ label, value, subValue, icon: Icon, color, trend }) => (
 );
 
 export default function AccountantDashboard() {
-  const { user }     = useAuthStore();
-  const propertyId   = user?.propertyId || '69d6817ab880abc410462b20';
-  const [activeTab,  setActiveTab]  = useState('overview');
-  const [dateRange,  setDateRange]  = useState(() => {
-    const end   = new Date().toISOString().split('T')[0];
+  const { user } = useAuthStore();
+  const propertyId = user?.propertyId || '69d6817ab880abc410462b20';
+  const [activeTab, setActiveTab] = useState('overview');
+  const [dateRange, setDateRange] = useState(() => {
+    const end = new Date().toISOString().split('T')[0];
     const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       .toISOString().split('T')[0];
     return { startDate: start, endDate: end };
   });
 
-  const { data: stats,    isLoading: statsLoading }    = useBookingStats(propertyId);
-  const { data: revenue,  isLoading: revenueLoading }  = useRevenueReport(
+  const { data: stats, isLoading: statsLoading } = useBookingStats(propertyId);
+  const { data: revenue, isLoading: revenueLoading } = useRevenueReport(
     propertyId, { ...dateRange, groupBy: 'day' }
   );
   const { data: occupancy, isLoading: occupancyLoading } = useOccupancyReport(
@@ -72,26 +71,26 @@ export default function AccountantDashboard() {
   );
 
   const revenueChartData = revenue?.data?.map(d => ({
-    date:    new Date(d.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+    date: new Date(d.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
     revenue: Math.round(d.revenue / 1000),
     bookings: d.bookings,
   })) || [];
 
   const occupancyChartData = occupancy?.data?.slice(-14).map(d => ({
-    date:      new Date(d.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+    date: new Date(d.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
     occupancy: d.occupancyRate,
-    rooms:     d.occupiedRooms,
+    rooms: d.occupiedRooms,
   })) || [];
 
-  const totalRevenue  = revenue?.summary?.totalRevenue  || 0;
+  const totalRevenue = revenue?.summary?.totalRevenue || 0;
   const totalBookings = revenue?.summary?.totalBookings || 0;
-  const avgRevenue    = revenue?.summary?.averageRevenue || 0;
-  const avgOccupancy  = occupancy?.summary?.avgOccupancyRate || 0;
+  const avgRevenue = revenue?.summary?.averageRevenue || 0;
+  const avgOccupancy = occupancy?.summary?.avgOccupancyRate || 0;
 
   const tabs = [
-    { key: 'overview',   label: 'Overview',  icon: BarChart3  },
-    { key: 'revenue',    label: 'Revenue',   icon: TrendingUp },
-    { key: 'occupancy',  label: 'Occupancy', icon: PieChart   },
+    { key: 'overview', label: 'Overview', icon: BarChart3 },
+    { key: 'revenue', label: 'Revenue', icon: TrendingUp },
+    { key: 'occupancy', label: 'Occupancy', icon: PieChart },
   ];
 
   return (
@@ -104,18 +103,18 @@ export default function AccountantDashboard() {
         </div>
 
         {/* Date range picker */}
-        <div className="flex items-center gap-3 bg-white border rounded-xl px-4 py-2">
+        <div className="flex items-center gap-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl px-4 py-2">
           <Calendar className="h-4 w-4 text-gray-400" />
           <input
             type="date"
-            className="text-sm text-gray-700 outline-none"
+            className="text-sm text-gray-700 dark:text-slate-300 bg-transparent outline-none"
             value={dateRange.startDate}
             onChange={e => setDateRange(d => ({ ...d, startDate: e.target.value }))}
           />
           <span className="text-gray-400">→</span>
           <input
             type="date"
-            className="text-sm text-gray-700 outline-none"
+            className="text-sm text-gray-700 dark:text-slate-300 bg-transparent outline-none"
             value={dateRange.endDate}
             onChange={e => setDateRange(d => ({ ...d, endDate: e.target.value }))}
           />
@@ -123,16 +122,15 @@ export default function AccountantDashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-gray-100 dark:bg-slate-800 rounded-xl p-1 w-fit">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+              }`}
           >
             <tab.icon className="h-4 w-4" />
             {tab.label}
@@ -186,7 +184,7 @@ export default function AccountantDashboard() {
           {/* Charts row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Revenue trend */}
-            <div className="card p-6 lg:col-span-2">
+            <div className="card dark:bg-slate-800 p-6">
               <h2 className="font-semibold text-gray-900 mb-6">Revenue Trend</h2>
               {revenueLoading ? (
                 <div className="flex justify-center py-8"><Spinner /></div>
@@ -221,7 +219,7 @@ export default function AccountantDashboard() {
             </div>
 
             {/* Payment methods */}
-            <div className="card p-6">
+            <div className="card dark:bg-slate-800 p-6">
               <h2 className="font-semibold text-gray-900 mb-6">Payment Methods</h2>
               <ResponsiveContainer width="100%" height={180}>
                 <RechartsPie>
@@ -256,17 +254,17 @@ export default function AccountantDashboard() {
           </div>
 
           {/* Today's summary */}
-          <div className="card p-6">
+          <div className="card dark:bg-slate-800 p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Today's Summary</h2>
             {statsLoading ? (
               <div className="flex justify-center py-4"><Spinner /></div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
-                  { label: 'Arrivals Today',   value: stats?.todayArrivals    || 0 },
-                  { label: 'Departures Today', value: stats?.todayDepartures  || 0 },
-                  { label: 'Occupied Rooms',   value: stats?.currentOccupancy || 0 },
-                  { label: 'Monthly Revenue',  value: `₹${((stats?.monthlyRevenue || 0) / 1000).toFixed(0)}K` },
+                  { label: 'Arrivals Today', value: stats?.todayArrivals || 0 },
+                  { label: 'Departures Today', value: stats?.todayDepartures || 0 },
+                  { label: 'Occupied Rooms', value: stats?.currentOccupancy || 0 },
+                  { label: 'Monthly Revenue', value: `₹${((stats?.monthlyRevenue || 0) / 1000).toFixed(0)}K` },
                 ].map(({ label, value }) => (
                   <div key={label} className="text-center p-4 bg-gray-50 rounded-xl">
                     <div className="text-xl font-bold text-gray-900">{value}</div>
@@ -282,7 +280,7 @@ export default function AccountantDashboard() {
       {/* Revenue Tab */}
       {activeTab === 'revenue' && (
         <div className="space-y-6">
-          <div className="card p-6">
+          <div className="card dark:bg-slate-800 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-semibold text-gray-900">Revenue Breakdown</h2>
               <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -313,15 +311,15 @@ export default function AccountantDashboard() {
                     labelStyle={{ fontWeight: 600 }}
                   />
                   <Legend />
-                  <Bar dataKey="revenue"  fill="#6d28d9" radius={[4,4,0,0]} name="revenue" />
-                  <Bar dataKey="bookings" fill="#2563eb" radius={[4,4,0,0]} name="bookings" />
+                  <Bar dataKey="revenue" fill="#6d28d9" radius={[4, 4, 0, 0]} name="revenue" />
+                  <Bar dataKey="bookings" fill="#2563eb" radius={[4, 4, 0, 0]} name="bookings" />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
 
           {/* Revenue summary table */}
-          <div className="card overflow-hidden">
+          <div className="card dark:bg-slate-800 overflow-hidden">
             <div className="px-6 py-4 border-b">
               <h2 className="font-semibold text-gray-900">Daily Revenue Summary</h2>
             </div>
@@ -396,7 +394,7 @@ export default function AccountantDashboard() {
             ))}
           </div>
 
-          <div className="card p-6">
+          <div className="card dark:bg-slate-800 p-6">
             <h2 className="font-semibold text-gray-900 mb-6">Daily Occupancy Rate</h2>
             {occupancyLoading ? (
               <div className="flex justify-center py-8"><Spinner /></div>
@@ -422,7 +420,7 @@ export default function AccountantDashboard() {
                   <Bar
                     dataKey="occupancy"
                     name="occupancy"
-                    radius={[4,4,0,0]}
+                    radius={[4, 4, 0, 0]}
                     fill="#6d28d9"
                   />
                 </BarChart>
@@ -431,7 +429,7 @@ export default function AccountantDashboard() {
           </div>
 
           {/* Occupancy table */}
-          <div className="card overflow-hidden">
+          <div className="card dark:bg-slate-800 overflow-hidden">
             <div className="px-6 py-4 border-b">
               <h2 className="font-semibold text-gray-900">Daily Occupancy Details</h2>
             </div>

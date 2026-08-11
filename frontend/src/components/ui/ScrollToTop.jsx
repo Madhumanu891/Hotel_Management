@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ChevronUp } from 'lucide-react';
 
+// ScrollToTop button — no router hooks needed
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 400);
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 

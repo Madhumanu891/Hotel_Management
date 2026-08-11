@@ -6,68 +6,71 @@ import {
   Activity, Building2, DollarSign, Bell, User,
   FileText, Clock, Star, TrendingUp, Utensils,
 } from 'lucide-react';
-import { useAuthStore }      from '../stores/authStore';
-import { useLogout }         from '../hooks/useAuth';
-import NotificationsPanel    from '../components/ui/NotificationsPanel';
-import ThemeToggle           from '../components/ui/ThemeToggle';
-import LanguageSelector      from '../components/ui/LanguageSelector';
+import { useAuthStore } from '../stores/authStore';
+import { useLogout } from '../hooks/useAuth';
+import NotificationsPanel from '../components/ui/NotificationsPanel';
+import ThemeToggle from '../components/ui/ThemeToggle';
+import LanguageSelector from '../components/ui/LanguageSelector';
+import ScrollToTop from '../components/ui/ScrollToTop';
+import RouteScrollReset from '../components/ui/RouteScrollReset';
+
 
 // ── Nav config per role ───────────────────────────────────────────────────────
 const navByRole = {
   hotel_manager: [
-    { to: '/dashboard/manager',           label: 'Dashboard',   icon: LayoutDashboard },
-    { to: '/dashboard/manager/bookings',  label: 'Bookings',    icon: Calendar        },
-    { to: '/dashboard/manager/analytics', label: 'Analytics',   icon: BarChart3       },
-    { to: '/dashboard/manager/staff',     label: 'Staff',       icon: Users           },
-    { to: '/dashboard/manager/profile',   label: 'My Profile',  icon: User            },
+    { to: '/dashboard/manager', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard/manager/bookings', label: 'Bookings', icon: Calendar },
+    { to: '/dashboard/manager/analytics', label: 'Analytics', icon: BarChart3 },
+    { to: '/dashboard/manager/staff', label: 'Staff', icon: Users },
+    { to: '/dashboard/manager/profile', label: 'My Profile', icon: User },
   ],
   receptionist: [
-    { to: '/dashboard/receptionist',            label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/dashboard/receptionist/checkin',    label: 'Check-in',  icon: ClipboardList   },
-    { to: '/dashboard/receptionist/checkout',   label: 'Check-out', icon: LogOut          },
-    { to: '/dashboard/receptionist/rooms',      label: 'Rooms',     icon: Building2       },
-    { to: '/dashboard/receptionist/profile',    label: 'My Profile',icon: User            },
+    { to: '/dashboard/receptionist', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard/receptionist/checkin', label: 'Check-in', icon: ClipboardList },
+    { to: '/dashboard/receptionist/checkout', label: 'Check-out', icon: LogOut },
+    { to: '/dashboard/receptionist/rooms', label: 'Rooms', icon: Building2 },
+    { to: '/dashboard/receptionist/profile', label: 'My Profile', icon: User },
   ],
   housekeeping: [
-    { to: '/dashboard/housekeeping',        label: 'My Tasks',    icon: ClipboardList   },
-    { to: '/dashboard/housekeeping/all',    label: 'All Tasks',   icon: LayoutDashboard },
-    { to: '/dashboard/housekeeping/profile',label: 'My Profile',  icon: User            },
+    { to: '/dashboard/housekeeping', label: 'My Tasks', icon: ClipboardList },
+    { to: '/dashboard/housekeeping/all', label: 'All Tasks', icon: LayoutDashboard },
+    { to: '/dashboard/housekeeping/profile', label: 'My Profile', icon: User },
   ],
   restaurant_staff: [
-    { to: '/dashboard/restaurant',         label: 'Kitchen',     icon: ChefHat         },
-    { to: '/dashboard/restaurant/menu',    label: 'Menu',        icon: Utensils        },
-    { to: '/dashboard/restaurant/profile', label: 'My Profile',  icon: User            },
+    { to: '/dashboard/restaurant', label: 'Kitchen', icon: ChefHat },
+    { to: '/dashboard/restaurant/menu', label: 'Menu', icon: Utensils },
+    { to: '/dashboard/restaurant/profile', label: 'My Profile', icon: User },
   ],
   hr_manager: [
-    { to: '/dashboard/hr',            label: 'Overview',    icon: LayoutDashboard },
-    { to: '/dashboard/hr/staff',      label: 'Staff',       icon: Users           },
-    { to: '/dashboard/hr/shifts',     label: 'Shifts',      icon: Clock           },
-    { to: '/dashboard/hr/leave',      label: 'Leave',       icon: FileText        },
-    { to: '/dashboard/hr/profile',    label: 'My Profile',  icon: User            },
+    { to: '/dashboard/hr', label: 'Overview', icon: LayoutDashboard },
+    { to: '/dashboard/hr/staff', label: 'Staff', icon: Users },
+    { to: '/dashboard/hr/shifts', label: 'Shifts', icon: Clock },
+    { to: '/dashboard/hr/leave', label: 'Leave', icon: FileText },
+    { to: '/dashboard/hr/profile', label: 'My Profile', icon: User },
   ],
   accountant: [
-    { to: '/dashboard/accountant',           label: 'Dashboard',  icon: LayoutDashboard },
-    { to: '/dashboard/accountant/payments',  label: 'Revenue',    icon: TrendingUp      },
-    { to: '/dashboard/accountant/profile',   label: 'My Profile', icon: User            },
+    { to: '/dashboard/accountant', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard/accountant/payments', label: 'Revenue', icon: TrendingUp },
+    { to: '/dashboard/accountant/profile', label: 'My Profile', icon: User },
   ],
   super_admin: [
-    { to: '/dashboard/admin',             label: 'Dashboard',   icon: LayoutDashboard },
+    { to: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard },
     // { to: '/dashboard/admin/properties',  label: 'Properties',  icon: Building2       },
     // { to: '/dashboard/admin/users',       label: 'Overview',    icon: Users           },
     // { to: '/dashboard/admin/analytics',   label: 'System',      icon: Activity        },
-    { to: '/dashboard/admin/metrics',     label: 'Metrics',     icon: BarChart3       },
-    { to: '/dashboard/admin/profile',     label: 'My Profile',  icon: User            },
+    { to: '/dashboard/admin/metrics', label: 'Metrics', icon: BarChart3 },
+    { to: '/dashboard/admin/profile', label: 'My Profile', icon: User },
   ],
 };
 
 const roleLabels = {
-  hotel_manager:    'Hotel Manager',
-  receptionist:     'Receptionist',
-  housekeeping:     'Housekeeping',
+  hotel_manager: 'Hotel Manager',
+  receptionist: 'Receptionist',
+  housekeeping: 'Housekeeping',
   restaurant_staff: 'Restaurant Staff',
-  hr_manager:       'HR Manager',
-  accountant:       'Accountant',
-  super_admin:      'Super Admin',
+  hr_manager: 'HR Manager',
+  accountant: 'Accountant',
+  super_admin: 'Super Admin',
 };
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
@@ -83,11 +86,11 @@ const Avatar = ({ name, size = 'sm' }) => {
 };
 
 export default function StaffLayout() {
-  const { user }       = useAuthStore();
+  const { user } = useAuthStore();
   const logoutMutation = useLogout();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const role    = user?.role || 'receptionist';
+  const role = user?.role || 'receptionist';
   const navItems = navByRole[role] || navByRole.receptionist;
   const roleLabel = roleLabels[role] || role;
 
@@ -113,10 +116,9 @@ export default function StaffLayout() {
             end={to === `/dashboard/${role === 'super_admin' ? 'admin' : role}`}
             onClick={() => setSidebarOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-primary-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
               }`
             }
           >
@@ -224,9 +226,11 @@ export default function StaffLayout() {
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+          <RouteScrollReset />
           <Outlet />
         </main>
       </div>
+      <ScrollToTop />
     </div>
   );
 }
